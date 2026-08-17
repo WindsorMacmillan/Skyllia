@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 public class UnbanSubCommand implements SubCommandInterface {
 
@@ -60,7 +61,11 @@ public class UnbanSubCommand implements SubCommandInterface {
         }
 
         String playerBan = args[0];
-        Players players = island.getMember(playerBan);
+        UUID playerBanId = parseUuid(playerBan);
+        Players players = island.getBannedMembers().stream()
+                .filter(banned -> isTarget(banned, playerBan, playerBanId))
+                .findFirst()
+                .orElse(null);
 
         if (players == null) {
             ConfigLoader.language.sendMessage(player, "island.unban.player-not-banned");
@@ -80,5 +85,20 @@ public class UnbanSubCommand implements SubCommandInterface {
     @Override
     public @NotNull List<String> onTabComplete(@NotNull Plugin plugin, @NotNull CommandSender sender, @NotNull String[] args) {
         return Collections.emptyList();
+    }
+
+    private boolean isTarget(Players banned, String playerName, UUID playerId) {
+        if (playerId != null && playerId.equals(banned.getMojangId())) {
+            return true;
+        }
+        return banned.getLastKnowName() != null && banned.getLastKnowName().equalsIgnoreCase(playerName);
+    }
+
+    private UUID parseUuid(String value) {
+        try {
+            return UUID.fromString(value);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 }

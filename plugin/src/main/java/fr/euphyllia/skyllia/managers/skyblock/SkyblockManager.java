@@ -200,6 +200,25 @@ public class SkyblockManager {
      * @throws IllegalStateException    If the owner's island ID is already set.
      */
     public Boolean createIsland(UUID islandId, IslandSettings islandType, Players owners) {
+        return createIsland(islandId, islandType, owners, null);
+    }
+
+    /**
+     * Creates an island at a specific region instead of allocating the next
+     * available location from the spiral table.
+     *
+     * @param islandId   the new island identifier
+     * @param islandType the settings to apply
+     * @param owners     the island owner
+     * @param region     the region to claim
+     * @return {@code true} if the island was created at the requested region
+     */
+    public Boolean createIslandAtRegion(UUID islandId, IslandSettings islandType, Players owners, RegionCoordinate region) {
+        Preconditions.checkArgument(region != null, "region cannot be null");
+        return createIsland(islandId, islandType, owners, region);
+    }
+
+    private Boolean createIsland(UUID islandId, IslandSettings islandType, Players owners, @Nullable RegionCoordinate region) {
         Preconditions.checkArgument(islandType != null, "islandType cannot be null");
         Preconditions.checkArgument(islandId != null, "islandId cannot be null");
         Preconditions.checkArgument(owners != null, "owners cannot be null");
@@ -220,17 +239,17 @@ public class SkyblockManager {
             Island futureIsland = new IslandHook(
                     event.getIslandId(),
                     event.getIslandSettings().maxMembers(),
-                    null,
+                    region,
                     event.getIslandSettings().rayon(),
                     null
             );
 
             boolean success;
             synchronized (REGION_ALLOCATION_LOCK) {
-                success = plugin.getInterneAPI()
-                        .getIslandQuery()
-                        .getIslandDataQuery()
-                        .insertIslands(futureIsland);
+                var islandDataQuery = plugin.getInterneAPI().getIslandQuery().getIslandDataQuery();
+                success = region == null
+                        ? islandDataQuery.insertIslands(futureIsland)
+                        : islandDataQuery.insertIslandAtRegion(futureIsland);
             }
 
             if (success) {

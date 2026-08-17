@@ -62,6 +62,18 @@ public class PostgreSQLIslandData extends IslandDataQuery {
             LIMIT 1;
             """;
 
+    private static final String ADD_ISLAND_AT_REGION = """
+            INSERT INTO islands (island_id, disable, region_x, region_z, private, size, create_time, max_members, locked)
+            SELECT ?, FALSE, ?, ?, ?, ?, NOW(), ?, FALSE
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM islands i
+                WHERE i.region_x = ?
+                  AND i.region_z = ?
+                  AND (i.locked = TRUE OR i.disable = FALSE)
+            );
+            """;
+
     private static final String SELECT_ALL_ISLANDS_VALID = """
             SELECT island_id, disable, region_x, region_z, private, locked, size, create_time, max_members
             FROM islands
@@ -127,6 +139,24 @@ public class PostgreSQLIslandData extends IslandDataQuery {
                 futurIsland.isPrivateIsland(),
                 futurIsland.getSize(),
                 futurIsland.getMaxMembers()
+        ));
+        return affected != 0;
+    }
+
+    @Override
+    public Boolean insertIslandAtRegion(Island futureIsland) {
+        RegionCoordinate region = futureIsland.getRegionCoordinate();
+        if (region == null) return false;
+
+        int affected = SQLExecute.update(databaseLoader, ADD_ISLAND_AT_REGION, List.of(
+                futureIsland.getId(),
+                region.x(),
+                region.z(),
+                futureIsland.isPrivateIsland(),
+                futureIsland.getSize(),
+                futureIsland.getMaxMembers(),
+                region.x(),
+                region.z()
         ));
         return affected != 0;
     }

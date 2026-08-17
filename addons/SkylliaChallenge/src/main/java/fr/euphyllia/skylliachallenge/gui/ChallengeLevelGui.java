@@ -1,6 +1,6 @@
 package fr.euphyllia.skylliachallenge.gui;
 
-import dev.triumphteam.gui.builder.item.ItemBuilder;
+import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import fr.euphyllia.skyllia.api.SkylliaAPI;
 import fr.euphyllia.skyllia.api.skyblock.Island;
@@ -56,7 +56,7 @@ public class ChallengeLevelGui {
                 .create();
 
         gui.setItem(gs.previous.row(), gs.previous.column(),
-                ItemBuilder.from(gs.previous.toItemStack())
+                PaperItemBuilder.from(gs.previous.toItemStack())
                         .name(ConfigLoader.language.translate(player.locale(), "addons.challenge.display.previous", Map.of(), false))
                         .asGuiItem(e -> {
                             final int previousPage = currentPage - 1;
@@ -70,7 +70,7 @@ public class ChallengeLevelGui {
                         }));
 
         gui.setItem(gs.next.row(), gs.next.column(),
-                ItemBuilder.from(gs.next.toItemStack())
+                PaperItemBuilder.from(gs.next.toItemStack())
                         .name(ConfigLoader.language.translate(player.locale(), "addons.challenge.display.next", Map.of(), false))
                         .asGuiItem(e -> {
                             final int nextPage = currentPage + 1;
@@ -126,7 +126,7 @@ public class ChallengeLevelGui {
             if (level.getGuiLore() != null) lore.addAll(level.getGuiLore());
 
             gui.setItem(pos.row(), pos.column(),
-                    ItemBuilder.from(base).lore(lore).name(miniMessage.deserialize(level.getName()))
+                    PaperItemBuilder.from(base).lore(lore).name(miniMessage.deserialize(level.getName()))
                             .asGuiItem(e -> {
                             }));
         }

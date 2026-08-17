@@ -14,6 +14,7 @@ import fr.euphyllia.skyllia.hook.HookBootstrap;
 import fr.euphyllia.skyllia.listeners.ListenersRegistrar;
 import fr.euphyllia.skyllia.papi.SkylliaExpansion;
 import fr.euphyllia.skyllia.sgbd.exceptions.DatabaseException;
+import fr.euphyllia.skyllia.tasks.InactiveIslandPurgeService;
 import fr.euphyllia.skyllia.utils.UpdateCheckerTask;
 import net.md_5.bungee.api.ChatColor;
 import org.apache.logging.log4j.Level;
@@ -42,6 +43,7 @@ public class Skyllia extends JavaPlugin {
     private SubCommandRegistry commandRegistry;
     private SubCommandRegistry adminCommandRegistry;
     private BStatsMetrics bStatsMetrics;
+    private InactiveIslandPurgeService inactiveIslandPurgeService;
 
     public static Skyllia getInstance() {
         return instance;
@@ -111,6 +113,9 @@ public class Skyllia extends JavaPlugin {
         if (ConfigLoader.general.getUpdateCheckerSettings().enabled()) {
             UpdateCheckerTask.start(this);
         }
+
+        inactiveIslandPurgeService = new InactiveIslandPurgeService(this);
+        inactiveIslandPurgeService.start();
     }
 
     @Override
@@ -119,6 +124,7 @@ public class Skyllia extends JavaPlugin {
         if (bStatsMetrics != null) {
             bStatsMetrics.shutdown();
         }
+        inactiveIslandPurgeService = null;
 
         Bukkit.getAsyncScheduler().cancelTasks(this);
         Bukkit.getGlobalRegionScheduler().cancelTasks(this);
@@ -146,6 +152,10 @@ public class Skyllia extends JavaPlugin {
 
     public @NotNull SubCommandRegistry getAdminCommandRegistry() {
         return adminCommandRegistry;
+    }
+
+    public InactiveIslandPurgeService getInactiveIslandPurgeService() {
+        return inactiveIslandPurgeService;
     }
 
     private boolean loadConfigurations() {

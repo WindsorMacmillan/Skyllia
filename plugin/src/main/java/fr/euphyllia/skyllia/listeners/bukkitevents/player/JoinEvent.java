@@ -59,7 +59,7 @@ public class JoinEvent implements Listener {
         final int joinChunkX = player.getLocation().getBlockX() >> 4;
         final int joinChunkZ = player.getLocation().getBlockZ() >> 4;
 
-        Bukkit.getAsyncScheduler().runNow(api.getPlugin(), _ -> {
+        Bukkit.getAsyncScheduler().runNow(api.getPlugin(), unused1 -> {
             try {
                 CacheCommands.refreshFor(playerId);
 
@@ -155,7 +155,7 @@ public class JoinEvent implements Listener {
     private void teleportToSafeLocation(Player player, Island ownIsland) {
         if (ownIsland != null) {
             // 传送到玩家自己的空岛中心
-            player.getScheduler().run(api.getPlugin(), _ -> {
+            player.getScheduler().run(api.getPlugin(), unused2 -> {
                 if (!player.isOnline()) return;
                 World world = player.getWorld();
                 RegionCoordinate region = ownIsland.getRegionCoordinate();
@@ -165,7 +165,7 @@ public class JoinEvent implements Listener {
             }, null);
         } else {
             // 没有空岛 → 传送到主世界固定坐标
-            player.getScheduler().run(api.getPlugin(), _ -> {
+            player.getScheduler().run(api.getPlugin(), unused3 -> {
                 if (!player.isOnline()) return;
                 World world = Bukkit.getWorld("world");
                 if (world != null) {

@@ -37,7 +37,7 @@ public class SheepEatGrassListener implements Listener {
                 location.getWorld(),
                 location.getBlockX() >> 4,
                 location.getBlockZ() >> 4,
-                _ -> {
+                unused1 -> {
                     // 仅在该位置仍是土方块时恢复
                     if (location.getBlock().getType() == Material.DIRT) {
                         location.getBlock().setType(Material.GRASS_BLOCK, false);

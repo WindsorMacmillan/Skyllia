@@ -88,7 +88,7 @@ public class PortalOverrideListener implements Listener {
     public void startCleanupTask() {
         Bukkit.getAsyncScheduler().runAtFixedRate(
                 SkylliaAPI.getPlugin(),
-                _ -> {
+                unused1 -> {
                     long cutoff = System.currentTimeMillis() - 1000; // 1 秒超时
                     processingPlayers.entrySet().removeIf(entry -> entry.getValue() < cutoff);
                     processingEntities.entrySet().removeIf(entry -> entry.getValue() < cutoff);
@@ -153,13 +153,13 @@ public class PortalOverrideListener implements Listener {
 
         // 其他非玩家实体保持异步传送
         Bukkit.getGlobalRegionScheduler().execute(SkylliaAPI.getPlugin(), () -> entity.teleportAsync(target, TeleportCause.END_PORTAL)
-                .whenComplete((_, throwable) -> {
+                .whenComplete((unused, throwable) -> {
                     processingEntities.remove(entity.getUniqueId());
                     if (throwable != null) {
                         logger.error("[传送门覆写] 实体 {} 异步传送失败", entity.getType(), throwable);
                     } else {
                         entity.getScheduler().runDelayed(SkylliaAPI.getPlugin(),
-                                _ -> {
+                                unused2 -> {
                                     entity.setVelocity(velocity);
                                     //logger.info("[传送门覆写] 已恢复实体 {} 的速度", entity.getType());
                                 }, null, 1);

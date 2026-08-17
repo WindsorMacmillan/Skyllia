@@ -19,7 +19,7 @@ public class ChunkEvent implements Listener {
         final int chunkX = event.getChunk().getX();
         final int chunkZ = event.getChunk().getZ();
 
-        Bukkit.getAsyncScheduler().runNow(Skyllia.getInstance(), _ ->
+        Bukkit.getAsyncScheduler().runNow(Skyllia.getInstance(), unused1 ->
                 SkylliaAPI.getIslandByChunk(chunkX, chunkZ));
     }
 }

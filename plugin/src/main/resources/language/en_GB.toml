@@ -240,6 +240,10 @@ max-members-nan = "The indicated number is incorrect."
 create-args-missing = "The player's name is missing."
 create-already-has-island = "This player already has an island."
 player-not-found = "Player not found."
+claim-args-missing = "The command is incomplete: /isadmin claim <player>"
+claim-not-in-skyblock-world = "You must stand in a Skyllia world to claim this region."
+claim-region-occupied = "This region is already assigned to an island or cannot be claimed."
+claim-success = "The current region has been claimed for %player%."
 
 [island.admin.max-members]
 args-missing = "The command is incomplete: /skylliadmin setmaxmembers <player/uuid> <number> confirm"

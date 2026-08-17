@@ -47,6 +47,7 @@ public class QuickShopListener implements Listener {
 
         final Location shopLoc = event.location();
         if (!SkylliaAPI.isWorldSkyblock(shopLoc.getWorld())) return;
+        if (event.user().getBukkitPlayer().get().isOp()) return;
 
         int chunkX = shopLoc.getBlockX() >> 4;
         int chunkZ = shopLoc.getBlockZ() >> 4;

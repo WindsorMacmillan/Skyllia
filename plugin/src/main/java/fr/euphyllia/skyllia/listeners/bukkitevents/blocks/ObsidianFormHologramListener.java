@@ -1,7 +1,10 @@
 package fr.euphyllia.skyllia.listeners.bukkitevents.blocks;
 
+import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import fr.euphyllia.skyllia.Skyllia;
 import fr.euphyllia.skyllia.listeners.permissions.player.ConvertObsidianToLavaPermissions;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Display;
@@ -17,6 +20,10 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ObsidianFormHologramListener implements Listener {
+
+    private static final String OBSIDIAN_RESTORE_HINT = "§6失误了？用§f桶§6对§5黑曜石§6右键\n§c可还原岩浆，下次小心~";
+    private static final Component OBSIDIAN_RESTORE_HINT_COMPONENT = LegacyComponentSerializer.legacySection()
+            .deserialize(OBSIDIAN_RESTORE_HINT);
 
     private final Skyllia plugin;
     private final NamespacedKey EXPIRE_KEY;
@@ -65,7 +72,7 @@ public class ObsidianFormHologramListener implements Listener {
         }
         Location hologramLoc = block.getLocation().add(0.5, 1.0, 0.5);
         TextDisplay display = block.getWorld().spawn(hologramLoc, TextDisplay.class, d -> {
-            d.setText("§6失误了？用§f桶§6对§5黑曜石§6右键\n§c可还原岩浆，下次小心~");
+            d.text(OBSIDIAN_RESTORE_HINT_COMPONENT);
             d.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
             d.setSeeThrough(true);
             d.setAlignment(TextDisplay.TextAlignment.CENTER);
@@ -97,7 +104,27 @@ public class ObsidianFormHologramListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onEntityAddToWorld(EntityAddToWorldEvent event) {
+        if (!(event.getEntity() instanceof TextDisplay display)) return;
+        if (!OBSIDIAN_RESTORE_HINT_COMPONENT.equals(display.text())) return;
+
+        Long expire = display.getPersistentDataContainer().get(EXPIRE_KEY, PersistentDataType.LONG);
+        if (expire != null && System.currentTimeMillis() < expire) {
+            long delayTicks = Math.max(1L, (expire - System.currentTimeMillis() + 49L) / 50L);
+            display.getScheduler().runDelayed(plugin, scheduledTask -> removeHologram(display), null, delayTicks);
+            return;
+        }
+
+        display.getScheduler().execute(plugin, () -> removeHologram(display), null, 1);
+    }
+
     private long positionToKey(Location loc) {
         return ((long) loc.getBlockX() << 32) | (loc.getBlockZ() & 0xFFFFFFFFL);
+    }
+
+    private void removeHologram(TextDisplay display) {
+        holograms.remove(positionToKey(display.getLocation()));
+        display.remove();
     }
 }

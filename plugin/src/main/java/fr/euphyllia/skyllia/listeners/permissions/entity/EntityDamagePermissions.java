@@ -20,6 +20,13 @@ import org.bukkit.plugin.Plugin;
 
 public class EntityDamagePermissions implements PermissionModule {
 
+    private static final int MAIN_CITY_MIN_X = 0;
+    private static final int MAIN_CITY_MAX_X = 511;
+    private static final int MAIN_CITY_MIN_Y = -63;
+    private static final int MAIN_CITY_MAX_Y = 319;
+    private static final int MAIN_CITY_MIN_Z = 0;
+    private static final int MAIN_CITY_MAX_Z = 511;
+
     private PermissionId ENTITY_DAMAGE;
 
     // 通用方法：从攻击者中提取玩家（支持弹射物）
@@ -46,6 +53,12 @@ public class EntityDamagePermissions implements PermissionModule {
         final Location location = target.getLocation();
 
         if (!SkylliaAPI.isWorldSkyblock(location.getWorld()) || player.isOp()) return;
+
+        // 主城范围内允许攻击盔甲架（自定义烟花相关）
+        if (isWithinMainCity(location.getBlockX(), location.getBlockY(), location.getBlockZ())
+                && target.getType() == EntityType.ARMOR_STAND) {
+            return;
+        }
 
         final Island island = getIslandAt(location);
         if (island == null) {
@@ -108,6 +121,12 @@ public class EntityDamagePermissions implements PermissionModule {
                 null,
                 ConfigLoader.general.getDebugSettings().permission()
         );
+    }
+
+    private boolean isWithinMainCity(int x, int y, int z) {
+        return x >= MAIN_CITY_MIN_X && x <= MAIN_CITY_MAX_X
+                && y >= MAIN_CITY_MIN_Y && y <= MAIN_CITY_MAX_Y
+                && z >= MAIN_CITY_MIN_Z && z <= MAIN_CITY_MAX_Z;
     }
 
     private boolean isProtectedDecorEntity(Entity entity) {

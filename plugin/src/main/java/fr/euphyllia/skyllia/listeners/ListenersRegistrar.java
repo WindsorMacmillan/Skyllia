@@ -9,6 +9,8 @@ import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.ObsidianFormHologramLi
 import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.OreDropPreventionListener;
 import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.PistonEvent;
 import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.SheepEatGrassListener;
+import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.EndPortalFrameMineListener;
+import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.IcePlaceWarningListener;
 import fr.euphyllia.skyllia.listeners.bukkitevents.player.*;
 import fr.euphyllia.skyllia.listeners.bukkitevents.world.ChunkEvent;
 import fr.euphyllia.skyllia.listeners.extra.IslandInfoExtraListener;
@@ -74,6 +76,8 @@ public class ListenersRegistrar {
         registerEvent(pluginManager, new PistonEvent(interneAPI));
         registerEvent(pluginManager, new GrowEvent(interneAPI));
         registerEvent(pluginManager, new SheepEatGrassListener(interneAPI));
+        registerEvent(pluginManager, new EndPortalFrameMineListener());
+        registerEvent(pluginManager, new IcePlaceWarningListener());
         registerEvent(pluginManager, new FallingBlockEvent());
         registerEvent(pluginManager, new MoveEvent());
         registerEvent(pluginManager, new QuitEvent());

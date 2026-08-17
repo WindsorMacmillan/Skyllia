@@ -5,11 +5,13 @@ import fr.euphyllia.skyllia.api.commands.SkylliaCommandInterface;
 import fr.euphyllia.skyllia.api.commands.SubCommandInterface;
 import fr.euphyllia.skyllia.api.commands.SubCommandRegistry;
 import fr.euphyllia.skyllia.commands.admin.subcommands.AdminSetDescriptionCommand;
+import fr.euphyllia.skyllia.commands.admin.subcommands.ClaimSubCommand;
 import fr.euphyllia.skyllia.commands.admin.subcommands.CurrentSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.ForceCreateSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.ForceDeleteSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.ForceTransferSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.InfoSubCommand;
+import fr.euphyllia.skyllia.commands.admin.subcommands.PurgeSubCommand;
 import fr.euphyllia.skyllia.commands.admin.subcommands.ReloadSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.SchematicSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.SetHeightSubCommands;
@@ -91,6 +93,8 @@ public class SkylliaAdminCommand implements SkylliaCommandInterface {
         registry.registerSubCommand(new SetHeightSubCommands(), "set_height", "setheight");
         registry.registerSubCommand(new SchematicSubCommands(), "schematic", "schem");
         registry.registerSubCommand(new ForceCreateSubCommands(), "create");
+        registry.registerSubCommand(new ClaimSubCommand(), "claim");
+        registry.registerSubCommand(new PurgeSubCommand(), "purge");
 
         // extra
         registry.registerSubCommand(new AdminSetDescriptionCommand(), "set_name", "setname");

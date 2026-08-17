@@ -75,6 +75,21 @@ public class SQLiteIslandData extends IslandDataQuery {
             LIMIT 1;
             """;
 
+    private static final String ADD_ISLAND_AT_REGION = """
+            INSERT INTO islands (
+                island_id, disable, region_x, region_z, private, size, create_time, max_members
+            )
+            SELECT
+                ?, 0, ?, ?, ?, ?, DATETIME('now'), ?
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM islands i
+                WHERE i.region_x = ?
+                  AND i.region_z = ?
+                  AND (i.locked = 1 OR i.disable = 0)
+            );
+            """;
+
     private static final String SELECT_ALL_ISLANDS_VALID = """
             SELECT island_id, disable, region_x, region_z, private, size, create_time, max_members
             FROM islands
@@ -175,6 +190,24 @@ public class SQLiteIslandData extends IslandDataQuery {
                 futurIsland.isPrivateIsland() ? 1 : 0,
                 futurIsland.getSize(),
                 futurIsland.getMaxMembers()
+        ));
+        return affected > 0;
+    }
+
+    @Override
+    public Boolean insertIslandAtRegion(Island futureIsland) {
+        RegionCoordinate region = futureIsland.getRegionCoordinate();
+        if (region == null) return false;
+
+        int affected = SQLExecute.update(databaseLoader, ADD_ISLAND_AT_REGION, List.of(
+                futureIsland.getId().toString(),
+                region.x(),
+                region.z(),
+                futureIsland.isPrivateIsland() ? 1 : 0,
+                futureIsland.getSize(),
+                futureIsland.getMaxMembers(),
+                region.x(),
+                region.z()
         ));
         return affected > 0;
     }

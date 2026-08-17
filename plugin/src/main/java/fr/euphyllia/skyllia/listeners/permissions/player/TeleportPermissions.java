@@ -135,6 +135,6 @@ public class TeleportPermissions implements PermissionModule {
         Location from = player.getLocation(); // 此时尚未完成传送，即起点
         Plugin plugin = SkylliaAPI.getPlugin();
         // 延迟 2 tick，确保原始传送已完成再纠正
-        player.getScheduler().runDelayed(plugin, _ -> player.teleportAsync(from, PlayerTeleportEvent.TeleportCause.PLUGIN).thenRun(() -> redirecting.remove(player.getUniqueId())), null, 2L);
+        player.getScheduler().runDelayed(plugin, unused1 -> player.teleportAsync(from, PlayerTeleportEvent.TeleportCause.PLUGIN).thenRun(() -> redirecting.remove(player.getUniqueId())), null, 2L);
     }
 }

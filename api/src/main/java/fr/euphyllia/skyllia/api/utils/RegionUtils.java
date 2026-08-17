@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 public class RegionUtils {
 
     private static final Logger logger = LogManager.getLogger(RegionUtils.class);
+    private static final int CHUNKS_PER_REGION = 32;
     private static final double OFFSET = 256D;
 
 
@@ -282,8 +283,14 @@ public class RegionUtils {
      * @return A list of {@link ChunkCoordinate} to delete.
      */
     public static List<ChunkCoordinate> computeChunksToDelete(RegionCoordinate islandRegion, int regionDistance, double size) {
-        List<ChunkCoordinate> chunkPositions = new ArrayList<>();
-        spiralStartCenter(islandRegion, regionDistance, size, chunkPositions::add);
+        int minChunkX = islandRegion.x() << 5;
+        int minChunkZ = islandRegion.z() << 5;
+        List<ChunkCoordinate> chunkPositions = new ArrayList<>(CHUNKS_PER_REGION * CHUNKS_PER_REGION);
+        for (int chunkX = minChunkX; chunkX < minChunkX + CHUNKS_PER_REGION; chunkX++) {
+            for (int chunkZ = minChunkZ; chunkZ < minChunkZ + CHUNKS_PER_REGION; chunkZ++) {
+                chunkPositions.add(new ChunkCoordinate(chunkX, chunkZ));
+            }
+        }
         return chunkPositions;
     }
 

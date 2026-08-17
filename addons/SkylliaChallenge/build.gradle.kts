@@ -18,7 +18,7 @@ dependencies {
     compileOnly(project(":database"))
     compileOnly(project(":addons:SkylliaBank"))
 
-    compileOnly("dev.triumphteam:triumph-gui:3.1.13")
+    implementation("dev.triumphteam:triumph-gui-paper:3.1.13")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 
     compileOnly("io.th0rgal:oraxen:1.180.0")

@@ -240,6 +240,10 @@ max-members-nan = "Le nombre de membres indiqué est incorrect."
 create-args-missing = "Le nom du joueur est manquant."
 create-already-has-island = "Ce joueur possède déjà une île."
 player-not-found = "Joueur introuvable."
+claim-args-missing = "La commande est incomplete : /isadmin claim <joueur>"
+claim-not-in-skyblock-world = "Vous devez vous trouver dans un monde Skyllia pour reclamer cette region."
+claim-region-occupied = "Cette region est deja attribuee a une ile ou ne peut pas etre reclamee."
+claim-success = "La region actuelle a ete attribuee a %player%."
 
 [island.admin.schematic]
 pos1-selected = "Position 1 sélectionnée."

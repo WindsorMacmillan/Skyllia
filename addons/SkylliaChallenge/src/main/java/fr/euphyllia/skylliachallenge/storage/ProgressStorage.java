@@ -60,7 +60,7 @@ public class ProgressStorage {
         backend.preloadProgress(row -> {
             CACHE.computeIfAbsent(row.islandId(), task -> new ConcurrentHashMap<>())
                     .put(row.challengeId(), row.timesCompleted());
-            LAST_COMPLETED_CACHE.computeIfAbsent(row.islandId(), _ -> new ConcurrentHashMap<>())
+            LAST_COMPLETED_CACHE.computeIfAbsent(row.islandId(), unused13 -> new ConcurrentHashMap<>())
                     .put(row.challengeId(), row.lastCompletedAt());
 
             int c = count.incrementAndGet();
@@ -75,9 +75,9 @@ public class ProgressStorage {
     public static void updateCompletion(UUID islandId, NamespacedKey challengeId, long nowEpochMillis) {
         String cid = challengeId.asString();
 
-        CACHE.computeIfAbsent(islandId, _ -> new ConcurrentHashMap<>())
+        CACHE.computeIfAbsent(islandId, unused14 -> new ConcurrentHashMap<>())
                 .merge(cid, 1, Integer::sum);
-        LAST_COMPLETED_CACHE.computeIfAbsent(islandId, _ -> new ConcurrentHashMap<>())
+        LAST_COMPLETED_CACHE.computeIfAbsent(islandId, unused15 -> new ConcurrentHashMap<>())
                 .put(cid, nowEpochMillis);
 
         EXECUTOR.submit(() -> {

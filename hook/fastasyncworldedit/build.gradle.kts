@@ -6,7 +6,7 @@ version = "2.3"
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT") { isTransitive = false }
-    compileOnly("net.kyori:adventure-text-minimessage:4.25.0")
+    compileOnly("net.kyori:adventure-text-minimessage:5.2.0")
     compileOnly(project(":api"))
 
     compileOnly(platform("com.intellectualsites.bom:bom-newest:1.55"))

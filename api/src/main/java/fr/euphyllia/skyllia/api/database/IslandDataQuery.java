@@ -30,6 +30,16 @@ public abstract class IslandDataQuery {
 
     public abstract Boolean insertIslands(Island futurIsland);
 
+    /**
+     * Creates an island at an explicitly chosen region when that region is not
+     * already assigned to an active or locked island.
+     *
+     * @param futureIsland the island to create; its region coordinate is used
+     *                     as the claimed region
+     * @return {@code true} when the row was inserted, otherwise {@code false}
+     */
+    public abstract Boolean insertIslandAtRegion(Island futureIsland);
+
     public abstract @Nullable Island getIslandByIslandId(UUID islandId);
 
     public abstract List<Island> getAllIslandsValid();

@@ -13,9 +13,11 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT") { isTransitive = false }
-    compileOnly("net.kyori:adventure-text-minimessage:4.26.1")
-    compileOnly("net.kyori:adventure-text-serializer-legacy:4.26.1")
+    compileOnly("net.kyori:adventure-text-minimessage:5.2.0")
+    compileOnly("net.kyori:adventure-text-serializer-legacy:5.2.0")
     compileOnly("me.clip:placeholderapi:2.11.6")
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
+    compileOnly("net.luckperms:api:5.4")
     compileOnly("me.earthme.luminol:luminol-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("dev.faststats.metrics:bukkit:0.27.0")
     compileOnly(project(":api"))

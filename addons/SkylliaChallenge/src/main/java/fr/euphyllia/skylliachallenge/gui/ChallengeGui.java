@@ -1,6 +1,6 @@
 package fr.euphyllia.skylliachallenge.gui;
 
-import dev.triumphteam.gui.builder.item.ItemBuilder;
+import dev.triumphteam.gui.builder.item.PaperItemBuilder;
 import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import fr.euphyllia.skyllia.api.SkylliaAPI;
@@ -179,14 +179,14 @@ public class ChallengeGui {
                 boolean fully = c.getMaxTimes() >= 0 && times >= c.getMaxTimes();
                 if (fully) {
                     // 已完成，跳过更新（或简单设置为发光但保持未知需求）
-                    player.getScheduler().run(plugin, _ -> {
+                    player.getScheduler().run(plugin, unused1 -> {
                         // 直接构建发光占位图标，需求仍为灰色
                         GuiItem updated = buildFullGuiItem(player, island, c, finalLevel1, finalSubPage, times, true, false);
                         gui.updateItem(slot, updated);
                     }, null);
                 } else {
                     boolean can = manager.canComplete(island, c, player);
-                    player.getScheduler().run(plugin, _ -> {
+                    player.getScheduler().run(plugin, unused2 -> {
                         GuiItem updated = buildFullGuiItem(player, island, c, finalLevel1, finalSubPage, times, false, can);
                         gui.updateItem(slot, updated);
                     }, null);
@@ -195,7 +195,7 @@ public class ChallengeGui {
             pendingUpdates.clear();
         });
 
-        player.getScheduler().run(plugin, _ -> gui.open(player), null);
+        player.getScheduler().run(plugin, unused3 -> gui.open(player), null);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -368,16 +368,16 @@ public class ChallengeGui {
         List<Component> finalLore = lore.stream()
                 .map(comp -> comp.decoration(TextDecoration.ITALIC, false)).collect(Collectors.toList());
 
-        ItemBuilder builder = ItemBuilder.from(base).lore(finalLore)
+        PaperItemBuilder builder = PaperItemBuilder.from(base).lore(finalLore)
                 .name(miniMessage.deserialize(c.getName()).decoration(TextDecoration.ITALIC, false));
         if (fullyCompleted) builder.glow(true);
 
-        return builder.asGuiItem(_ -> {
+        return builder.asGuiItem(unused4 -> {
             if (!fullyCompleted && manager.complete(island, c, player)) {
                 ConfigLoader.language.sendMessage(player, "addons.challenge.player.complete",
                         Map.of("%challenge_name%", c.getName()));
             }
-            Bukkit.getAsyncScheduler().runNow(plugin, _ -> open(player, level, subPage));
+            Bukkit.getAsyncScheduler().runNow(plugin, unused5 -> open(player, level, subPage));
         });
     }
 
@@ -403,9 +403,9 @@ public class ChallengeGui {
         List<Component> finalLore = lore.stream()
                 .map(comp -> comp.decoration(TextDecoration.ITALIC, false))
                 .collect(Collectors.toList());
-        return ItemBuilder.from(base).lore(finalLore)
+        return PaperItemBuilder.from(base).lore(finalLore)
                 .name(miniMessage.deserialize(c.getName()).decoration(TextDecoration.ITALIC, false))
-                .asGuiItem(_ -> { /* 初始无操作 */ });
+                .asGuiItem(unused6 -> { /* 初始无操作 */ });
     }
 
     /**
@@ -419,14 +419,14 @@ public class ChallengeGui {
         // ── 上一页 ──
         if (multiPage) {
             gui.setItem(NAV_ROW, COL_PREV,
-                    ItemBuilder.from(new ItemStack(Material.ARROW))
+                    PaperItemBuilder.from(new ItemStack(Material.ARROW))
                             .name(ConfigLoader.language.translate(player.locale(),
                                             "addons.challenge.display.previous", Map.of(), false)
                                     .decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE))
-                            .asGuiItem(_ -> {
+                            .asGuiItem(unused7 -> {
                                 int prev = currentSubPage > 1 ? currentSubPage - 1 : totalSubPages;
                                 Bukkit.getAsyncScheduler().runNow(plugin,
-                                        _ -> open(player, currentLevel, prev));
+                                        unused8 -> open(player, currentLevel, prev));
                             }));
         } else {
             gui.setItem(NAV_ROW, COL_PREV, emptyPane());
@@ -435,13 +435,13 @@ public class ChallengeGui {
         // ── 下一页 ──
         if (multiPage) {
             gui.setItem(NAV_ROW, COL_NEXT,
-                    ItemBuilder.from(new ItemStack(Material.ARROW))
+                    PaperItemBuilder.from(new ItemStack(Material.ARROW))
                             .name(ConfigLoader.language.translate(player.locale(),
                                     "addons.challenge.display.next", Map.of(), false))
-                            .asGuiItem(_ -> {
+                            .asGuiItem(unused9 -> {
                                 int next = currentSubPage < totalSubPages ? currentSubPage + 1 : 1;
                                 Bukkit.getAsyncScheduler().runNow(plugin,
-                                        _ -> open(player, currentLevel, next));
+                                        unused10 -> open(player, currentLevel, next));
                             }));
         } else {
             gui.setItem(NAV_ROW, COL_NEXT, emptyPane());
@@ -536,7 +536,7 @@ public class ChallengeGui {
             }
             // 已解锁但不是最高级别 → 不显示任何进度提示
 
-            ItemBuilder builder = ItemBuilder.from(new ItemStack(mat))
+            PaperItemBuilder builder = PaperItemBuilder.from(new ItemStack(mat))
                     .name(name)
                     .lore(loreList);
 
@@ -545,10 +545,10 @@ public class ChallengeGui {
             }
 
             gui.setItem(NAV_ROW, COL_LEVELS[i],
-                    builder.asGuiItem(_ -> {
+                    builder.asGuiItem(unused11 -> {
                         if (lvl != currentLevel && unlocked) {
                             Bukkit.getAsyncScheduler().runNow(plugin,
-                                    _ -> open(player, lvl, 1));
+                                    unused12 -> open(player, lvl, 1));
                         }
                     }));
         }
@@ -573,7 +573,7 @@ public class ChallengeGui {
     private GuiItem emptyPane() {
         ItemStack pane = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         pane.getItemMeta().setHideTooltip(true);
-        return ItemBuilder.from(pane)
+        return PaperItemBuilder.from(pane)
                 .name(Component.empty())
                 .asGuiItem();
     }
