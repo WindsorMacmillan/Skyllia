@@ -1,211 +1,101 @@
 <div align="center">
 
-# <img src="https://cdn.modrinth.com/data/fGbtispn/d3a18500b1a981a2207407035798e918437d0f94_96.webp" height="25"> Skyllia
+# Skyllia（Meows Server Custom Patch）
 
-### The first Skyblock plugin built for Folia
+### 与上游 [Euphillya/Skyllia](https://github.com/Euphillya/Skyllia) `ver/3.x` 的特性区别
 
-[![Folia](https://img.shields.io/badge/Built%20for-Folia-brightgreen.svg)](https://papermc.io/software/folia)
-[![Paper](https://img.shields.io/badge/Paper-1.20.6+-blue.svg)](https://papermc.io/)
-[![Java](https://img.shields.io/badge/Java-21+-orange.svg)](https://www.oracle.com/java/)
-[![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Euphillya/Skyllia/blob/ver/3.x/LICENSE)
-[![Servers](https://img.shields.io/endpoint?url=https%3A%2F%2Ffaststats.dev%2Fapi%2Fshields%2Fskyllia%3Fmetric%3Dservers&style=flat)](https://faststats.dev/project/skyllia)
-[![Total downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Ffaststats.dev%2Fapi%2Fshields%2Fskyllia%3Fmetric%3Ddownloads&style=flat)](https://faststats.dev/project/skyllia)
+本分支在上游原版基础上做了大量本地化增强与调整。以下按 **新功能特性 / 移除机制 / 改良实现 / 修复 bug** 四个板块列出与上游的差异。
 
-[Documentation](https://skyllia.euphyllia.moe) • [GitHub](https://github.com/Euphillya/Skyllia) • [Modrinth](https://modrinth.com/plugin/skyllia) • [Discord](https://discord.gg/uUJQEB7XNN)
-
-[![Servers & Players](https://faststats.dev/embed/default:6978bcc2-1574-41ea-b5ae-242398b401c7:servers-and-players?w=800&h=300)](https://faststats.dev/project/skyllia/skyllia-plugin)
 </div>
 
 ---
 
-## 📖 About
+## ✨ 新功能特性
 
-**Skyllia** is a modern, high-performance Skyblock plugin, designed from the ground up to fully leverage the
-multi-threaded architecture of **Folia**. The first of its kind to offer native Folia compatibility, Skyllia
-delivers exceptional performance even with hundreds of simultaneous players.
+### 🛡️ 行为与保护机制
 
-## ✨ Key Features
+- **进出岛屿日志**：当玩家进出他人岛屿时打印信息到控制台日志。
+- **末地传送日志**：当玩家通过末地门进入末地时打印信息到控制台日志。
+- **矿物流失防护**：熔炉/高炉熔炼矿物方块不掉落矿物；凋零破坏矿物方块不掉落物品。
+- **可挖掘末地传送门框架**：持续挖掘末地门框架 30 秒后强制破坏。
+- **冰块放置警告**：新手玩家（在线 ≤ 5 小时）在空中放置无支撑冰时显示悬浮字警告：该冰挖掉不会变成水。
+- **黑曜石转化岩浆全息提示**：黑曜石可舀取为岩浆，显示悬浮字提醒：可以用桶恢复黑曜石为岩浆。注意：插件会记录自然形成的黑曜石，仅自然形成黑曜石和服务器重启后第一次对黑曜石舀取可以恢复为岩浆。玩家放置黑曜石不能恢复。
+- **羊吃草快速恢复**：羊吃草后1秒若该位置仍为土方块，则自动恢复为草方块。
+- **闪电村民转换**：闪电击中村民转化成女巫时，在全服播报喜报，提醒玩家放置避雷针。
 
-### 🚀 Performance & Architecture
+### 🗂️ 不活跃岛屿清理（`/isadmin purge`）
+插件会玩家岛屿所有成员最后在线时间判定岛屿无人活跃时长，定时清理长期离线玩家的岛屿。
 
-- **First Folia-compatible Skyblock plugin** — Native multi-threaded architecture
-- **Asynchronous system** — No freezes, no lag (as long as your server configuration allows)
+- **自动清理**：插件加载时设定定时任务，每天凌晨4点开始扫描并清理岛屿。
+- **手动清理**：可以管理员或控制台执行 `/isadmin purge` 强制开始一轮清理。
+- **可变清理阈值**：默认允许岛屿离线30天，每完成一个挑战可以延长2天允许时间，挑战解锁到终极等级时永不清理。
+- **独立权限绕过**：独立权限 `skyllia.island.purge.bypass` ，岛主或任意成员拥有此权限，则岛屿永不清理。
+- **岛屿信息查看**：管理员或控制台执行 `/isadmin info <玩家名>` 可以查看岛屿信息和无人活跃时间。
 
-### 💾 Data Management
+### 🗂️ 岛屿存档热回档（`/isadmin restore`）
 
-- **Database support** — SQLite, MariaDB, PostgreSQL
-- **HikariCP connection pool** — Optimal performance
-- **Asynchronous saving** — Zero performance impact
+服务器运行中，从世界全量备份恢复岛屿存档：以「整体覆写」方式写回区块数据（`region` / `poi` / `entities`），**全程不加载区块、不触发任何方块更新**。
 
-### 🏝️ Island Management
+- **多种恢复范围**：整岛（全部维度）、指定维度、指定区块（方块坐标自动换算区块）、对角线矩形区块范围（含边界，两组坐标任意方向）。
+- **偏移模式** `offset <旧方块X> <旧方块Z>`：岛屿被删除后重建、分配了新区域坐标时，把备份中**旧岛屿**区域映射覆盖到**新岛屿**区域（偏移以区域为单位，区块按 `dx*32 / dz*32` 映射）。
+- **安全流程**：恢复前强制清场（弹出范围内玩家并拒绝进入）、卸载区块、写盘前静置并二次确认无残留加载。
+- **实时反馈**：每一步进度推送给命令执行者与控制台；保留 `status` 子命令查询。
+- **只读诊断** `restore check <玩家> [维度]`：报告解析出的备份/实机路径与备份可读区块数；备份中缺少对应区域文件时**直接中止**，避免误将岛屿清空。
+- **备份提醒**：按配置间隔提醒在线管理员备份世界存档。
 
-- **Instant creation** — Optimized queue system
-- **Customizable schematics** — WorldEdit/FAWE or built-in system
-- **Multi-world** — Overworld, Nether, End all configurable
-- **Automatic portals** — Smooth navigation between dimensions
-- **Configurable spacing** — Adjustable distance between islands
+### 🏆 光荣榜（`/is top`）
 
-### 👥 Permission System
+- **岛屿卡顿排行**：基于 MSPT 的排行榜，展示岛屿成员、MSPT 与实体统计。
+- **数据异常岛屿检测**：掉落物 / 点燃的 TNT / 凋灵之首 / 下落方块 / 船 / 实体总量超过阈值时标记为异常并展示；异常出现时按时间节流向在线管理员告警并打印控制台。
+- **方块类排名**：统计各岛屿的漏斗、熔炉类、下界传送门、红石线、侦测器与活塞类、TNT、水的总量，取前十名展示。
+- **离线方块统计**：直接读取区域文件原始 NBT 统计方块，不加载区块、不触发更新（配套 NMS 能力）。
+- **持久化续跑**：扫描结果与进度落盘，支持跨重启续跑。
 
-- **6 predefined roles** — Owner, Co-Owner, Moderator, Member, Visitor, Ban
-- **50+ granular permissions** — Full control per role
-- **Temporary trust** — Configurable guest access
-- **Modular system** — Create your own permission
+### 🧭 其他新增命令
 
-### 🎯 Advanced Features
+| 命令                                       | 说明                                        |
+|------------------------------------------|-------------------------------------------|
+| `/is near`                               | 显示玩家岛屿北 / 东 / 西 / 南四个方向邻接岛屿的岛主；无人区显示「无人区」 |
+| `/isadmin claim`                         | 管理员强制认领当前无人区所在区域创建为指定玩家的岛屿（需要该玩家没有岛屿）     |
+| `/isadmin flags` / `/isadmin permission` | 管理员规则/权限子命令，强制设置或查询指定玩家的岛屿规则和权限           |
 
-- **Island warps** — Quick teleportation to your island
-- **Customizable biomes** — Change the atmosphere of your island
-- **Per-island game rules** — PvP, mobs, explosions, etc.
-- **Ban system** — Ban griefers from your island
-- **Invitations** — Invitation system with expiry
+### 🎯 SkylliaChallenge 增强
 
-### 🔌 Integrations
+- **新增需求类型 `BlockNearRequirement`**：按玩家附近指定方块的数量作为挑战需求。
 
-- **PlaceholderAPI** — Variables for scoreboard, tab, etc.
-- **Vault** — Economy support (via SkylliaBank)
-- **WorldEdit/FAWE** — High-performance schematics
-- **Insights** — Block limits (via SkylliaInsights)
+---
 
-## 🎮 Official Addons
+## 🚫 移除机制
 
-Extend Skyllia with 7 free official addons:
+- **移除每玩家岛屿世界边界**：移除了上游基于 `EntityAddToWorldEvent` 为玩家动态创建/更新个人世界边界的整套机制。
+  - 删除监听器 `listeners/bukkitevents/player/WorldBorderAddEvent.java` 与 `listeners/skyblockevents/SkyblockEvent.java`。
+  - 移除 API `api/.../utils/nms/PlayerNMS#setOwnWorldBorder(...)`（上游已标记 `@Deprecated(forRemoval)`）。
+  - 玩家端不再因岛屿尺寸变化而显示个人世界边界。
+- **Folia 传送门替代实现**：移除插件原本 `PortalAlternativeFoliaEvent` 对多维度传送的限制，交由 `PortalOverrideListener` 处理多维度传送逻辑。
 
-| Addon                  | Description                                                       |
-|------------------------|-------------------------------------------------------------------|
-| **SkylliaBank**        | Shared island bank system with transaction history                |
-| **SkylliaOre**         | Configurable automatic ore generator                              |
-| **SkylliaChallenge**   | Daily/weekly challenges with rewards                              |
-| **SkylliaChat**        | Per-island chat with multiple channels                            |
-| **SkylliaInsights**    | Block and entity limits per island                                |
-| **SkylliaChest**       | Share a chest across your entire island (beta)                    |
-| **SkylliaAcidRain**    | The water is becoming acidic!                                     |
-| **SkylliaIslandValue** | Island value depends on the number of blocks placed on the island |
+---
 
-## 📋 Requirements
+## 🔧 改良实现
 
-- **Server**: Folia 1.20.6+ or Paper 1.20.6+
-- **Java**: 21
-- **RAM**: 4GB minimum, 8GB+ recommended
-- **Database** (optional): MariaDB 10.5+ or PostgreSQL 12+ (prefer PostgreSQL for large servers)
+- **浮点坐标存取**：世界 / 出生点 / 家 / 传送点按玩家**浮点坐标**存储与传送（不再截断为整数、不再叠加偏移）。
+- **信任关系持久化**：信任玩家关系写入数据库，启动时加载。
+- **展示架 / TNT 引爆访问保护**：展示架交互与火矢弓箭引燃TNT加入空岛保护机制中。
+- **弹射物保护**：防止访客用弹射物（三叉戟、箭等）破坏紫颂植物等方块。
+- **新增 `nms/v26_3` 模块**：为 Minecraft 26.3 提供 NMS 实现，并接入版本分发与命令注册。
+- **构建工具链调整**：`plugin` / `hook:luminol` / `addons:*` 改以 **Java 25** 编译，其余模块保持 Java 21（适配本地 Lophine API）。
+- **依赖来源本地化**：将原 Luminol 远程仓库依赖替换为本地 Lophine 构建依赖；`paper-plugin.yml` 增加 `Vault` 加载顺序（BEFORE）。
+- **Folia 区域归属**：为各 NMS 版本补充 `getTickRegionId`（获取 Folia tick 区域 ID），支撑光荣榜的区域统计。
+- **配置扩展**：新增 `[settings.restore]`（`backup-root`、`reminder-interval-hours`）等配置项。
+- **移除废弃 API 用法**：清理一批已弃用 / 待移除的 API 调用。
+- **SkylliaChallenge 改进**：挑战需求支持在 GUI 中显示实时进度（已上交 + 背包内符合条件的数量）；新增已解锁等级的记录与查询。
 
-### Compatible plugins (optional)
+---
 
-- [WorldEdit](https://modrinth.com/plugin/worldedit) (recommended)
-  or [FastAsyncWorldEdit](https://modrinth.com/plugin/fastasyncworldedit)
-- [Vault](https://www.spigotmc.org/resources/vault.34315/) (for SkylliaBank)
-- [PlaceholderAPI](https://modrinth.com/plugin/placeholderapi) (for placeholders)
-- [LuckPerms](https://modrinth.com/plugin/luckperms) (for server permissions)
-- [QuickShop-Hikari](https://modrinth.com/plugin/quickshop-hikari) (for shop island)
+## 🐞 修复 bug
 
-## 🚀 Quick Installation
+- **SQLite 传送点坐标截断**：修复 SQLite 后端把传送点坐标按整数方块存储、导致落点偏移的问题（改为双精度浮点，与 MariaDB / PostgreSQL 一致）。
+- **不完整方块上点位传送卡方块**：修复在台阶、雪层等不完整方块表面设置的家 / 出生点 / 传送点，传送后落入方块内部的问题。
+- **信任玩家权限检查**：修复信任（trusted）玩家的权限判定。
+---
 
-1. **Download** Skyllia from [Modrinth](https://modrinth.com/plugin/skyllia)
-   or [GitHub Releases](https://github.com/Euphillya/Skyllia/releases)
-2. **Place** the .jar in `plugins/`
-3. **Start** the server (first initialization)
-4. **Configure** in `plugins/Skyllia/config/`
-5. **Restart** and you're good to go!
-
-### Minimal Configuration
-
-```toml
-# config.toml
-[settings.island]
-region-distance = 10  # 5120 blocks between islands, 1 region = 512x512
-max-islands = 500_000
-
-# database.toml - SQLite by default
-[sqlite]
-enabled = true
-```
-
-For a full installation guide, check the [documentation]().
-
-## 📚 Documentation
-
-Full documentation is available on GitBook:
-
-**🔗 [skyllia.euphyllia.moe](https://skyllia.euphyllia.moe)**
-
-## 💻 For Developers
-
-Skyllia provides a complete API to create your own addons:
-
-```xml
-<!-- Maven -->
-<repository>
-    <id>euphyllia-repo</id>
-    <url>https://repo.euphyllia.moe/repository/maven-public/</url>
-</repository>
-
-<dependency>
-<groupId>fr.euphyllia.skyllia</groupId>
-<artifactId>api</artifactId>
-<version>3.x</version>
-<scope>provided</scope>
-</dependency>
-```
-
-```java
-import fr.euphyllia.skyllia.api.SkylliaAPI;
-import fr.euphyllia.skyllia.api.island.Island;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.Listener;
-
-public class MyPlugin implements Listener {
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        Island island = SkylliaAPI.getIslandByPlayerId(player.getUniqueId());
-        if (island != null) {
-            player.sendMessage("Your island: " + island.getId());
-        }
-    }
-}
-```
-
-See the [API documentation](#) for more information.
-
-## 🎯 Main Commands
-
-### Players
-
-```
-/island create <type>    - Create an island
-/island home             - Teleport to your island
-/island invite <player>  - Invite a player
-/island delete           - Delete your island
-/island biome <biome>    - Change the biome
-/island expel <player>   - Expel a visitor
-```
-
-### Administrators
-
-```
-/isadmin reload              - Reload configs
-/isadmin setsize <player> <size> - Modify island size
-/isadmin teleport <player>   - TP to a player's island
-```
-
-## 🤝 Contributing
-
-Skyllia is open source, you can contribute via:
-
-- **Bug reports** — [GitHub Issues](https://github.com/Euphillya/Skyllia/issues)
-- **Suggestions** — Discord or GitHub Discussions
-- **Community addons** — Share your creations!
-
-## 📞 Support
-
-- **GitHub**: [Euphillya/Skyllia](https://github.com/Euphillya/Skyllia)
-- **Issues**: [Report a bug](https://github.com/Euphillya/Skyllia/issues)
-- **Discord**: [Euphyllia Server](https://discord.gg/uUJQEB7XNN)
-
-## 📜 License
-
-Skyllia is licensed under the MIT License. For more details, see
-the [LICENSE](https://github.com/Euphillya/Skyllia/blob/ver/3.x/LICENSE) file in the GitHub repository.
+> 说明：本文件仅描述本分支相对上游 `up/ver/3.x` 的差异；上游自身的更新内容不在此列出。
