@@ -3,6 +3,15 @@ config-version = 4
 # Enables detailed logging in the console (for debugging purposes).
 verbose = false
 
+[settings.restore]
+# 本服务端项目自定义修改：岛屿存档恢复（热回档）所用的备份世界目录。
+# 指向"备份中的世界根目录"——即该目录下应有 dimensions/<命名空间>/<维度>/region|poi|entities。
+# 支持绝对路径；相对路径相对于服务端工作目录。
+# 例：你的全量备份世界文件夹为 E:\Minecraft Luminol Server\restore\world，则填该路径。
+backup-root = "restore/world"
+# 定时提醒在线管理员备份世界存档的间隔（小时）。0 表示关闭提醒。
+reminder-interval-hours = 2
+
 [settings.island]
 # Distance between islands (in regions, 1 region = 512x512 blocks).
 region-distance = 10

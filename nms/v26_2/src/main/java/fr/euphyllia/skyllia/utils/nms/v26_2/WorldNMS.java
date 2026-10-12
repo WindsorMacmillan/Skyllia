@@ -418,6 +418,11 @@ public class WorldNMS extends fr.euphyllia.skyllia.api.utils.nms.WorldNMS {
     }
 
     @Override
+    public @Nullable Long getTickRegionId(Location location) {
+        return fr.euphyllia.skyllia.utils.nms.v1_21_R7.WorldNMS.getTickRegionIdHelper(location);
+    }
+
+    @Override
     public List<Entity> getEntities(World craftWorld, final @Nullable Entity except, final BoundingBox boundingBox, Predicate<? super Entity> filter) {
         final ServerLevel nms = ((CraftWorld) craftWorld).getHandle();
         AABB bb = new AABB(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());

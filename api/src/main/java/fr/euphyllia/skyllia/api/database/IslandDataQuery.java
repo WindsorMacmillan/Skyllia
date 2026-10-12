@@ -8,6 +8,8 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -72,4 +74,11 @@ public abstract class IslandDataQuery {
     public abstract boolean upsertCenterLocation(UUID islandId, Location location);
 
     public abstract List<Location> getCenterLocations(UUID islandId);
+
+    /** Loads trusted-player relations for all active islands. */
+    public abstract Map<UUID, Set<UUID>> loadTrustedPlayers();
+
+    public abstract boolean addTrustedPlayer(UUID islandId, UUID playerId);
+
+    public abstract boolean removeTrustedPlayer(UUID islandId, UUID playerId);
 }

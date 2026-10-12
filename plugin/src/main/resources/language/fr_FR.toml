@@ -34,6 +34,7 @@ player-not-in-island = "Le joueur n'est pas sur votre île."
 
 [island.delete]
 args-missing = "Vous devez ajouter 'confirm' à la fin de votre commande."
+confirm = "<white>[</white><gray>空岛</gray><white>] </white><red>你确定要删除你的空岛吗？删除空岛会使你的物品、等级和余额清零！服务器明确禁止反复重置空岛完成挑战并转账刷钱，并且会报告每一次空岛重置记录。15秒内再次执行</red><gray>[</gray><yellow>/is delete confirm</yellow><gray>]</gray><red>以确认执行。</red>"
 
 [island.leave]
 he-is-owner = "Vous ne pouvez pas quitter votre île, car vous en êtes le propriétaire !"
@@ -148,19 +149,21 @@ home-not-found = "Le home n'a pas été trouvée."
 [island.info]
 no-owner = "Il n'y a pas de propriétaire pour cette île."
 no-permission = "Vous n'avez pas la permission d'utiliser cette commande."
+wilderness = "无人区"
 
 [island.info.display]
 title = "<gold>=== Information de l'ile ===</gold>"
 id = "<yellow>ID de l'ile : </yellow><white>%id%</white>"
-owner = "<yellow>Propriétaire : </yellow><white>%owner%</white>"
+owner = "<yellow>Propriétaire : </yellow><white>%owner% (%owner_uuid%)</white>"
 size = "<yellow>Taille : </yellow><white>%size% blocks</white>"
 private = "<yellow>Privé : </yellow><white>%private%</white>"
 max-members = "<yellow>Max de Membres: </yellow><white>%max%</white>"
 created = "<yellow>Date de création: </yellow><white>%created%</white>"
 online-members = "<yellow>Membres en lignes: </yellow><white>%online%/%total%</white>"
+inactive = "<yellow>Inactivité: </yellow><white>%duration%</white>"
 location = "<yellow>Location: </yellow><white>X: %x% Z: %z%</white>"
 members-title = "<gold>=== Membres ===</gold>"
-member-line = "%color%- [%role%] %name%"
+member-line = "%color%- [%role%] %name% %offline%"
 
 [island.kick]
 success = "Le joueur a été expulsé de votre île."

@@ -47,6 +47,7 @@ dependencies {
     implementation(project(":nms:v1_21_R7"))
     implementation(project(":nms:v26_1"))
     implementation(project(":nms:v26_2"))
+    implementation(project(":nms:v26_3"))
 }
 
 allprojects {
@@ -59,7 +60,17 @@ allprojects {
 
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
+            // 本服务端项目自定义修改：以下模块需以 JVM 25 编译：
+            //  1) plugin 与 hook:luminol 直接引用 me.earthme.luminol.* 类型，而取代
+            //     已失效 luminol-api 的 fun.bm.lophine:lophine-api 以 JVM 25（major 69）构建；
+            //  2) 各 addons 通过 compileOnly(project(":plugin")) 消费 :plugin 的类文件，
+            //     而 javac 21 无法读取 major 69 的类文件（"类文件具有错误的版本 69.0, 应为 65.0"），
+            //     故必须同样以 25 编译；否则整套构建无法通过。
+            // 其余模块（api / database / nms 1.21.x 等）维持 21，与上游保持一致。
+            // 注意：:plugin 被上方 evaluationDependsOn 提前求值，其模块内 toolchain 会被本块覆盖，
+            // 因此必须在此处统一指定（不可仅在模块内设置）。
+            val needsJava25 = name == "plugin" || name == "luminol" || path.startsWith(":addons")
+            languageVersion.set(JavaLanguageVersion.of(if (needsJava25) 25 else 21))
         }
     }
 
@@ -84,6 +95,7 @@ allprojects {
         compileOnly("com.zaxxer:HikariCP:7.1.0")
         compileOnly("org.xerial:sqlite-jdbc:3.51.2.0")
         compileOnly("org.jetbrains:annotations:26.1.0")
+        compileOnly("org.jspecify:jspecify:1.0.1")
         compileOnly("com.electronwill.night-config:toml:3.8.3")
         compileOnly("net.md-5:bungeecord-api:1.20-R0.2")
         compileOnly("com.mojang:brigadier:1.0.18")

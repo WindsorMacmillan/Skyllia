@@ -11,7 +11,6 @@ import fr.euphyllia.skyllia.api.skyblock.model.RoleType;
 import fr.euphyllia.skyllia.api.skyblock.model.WarpIsland;
 import fr.euphyllia.skyllia.api.utils.helper.RegionHelper;
 import fr.euphyllia.skyllia.configuration.ConfigLoader;
-import fr.euphyllia.skyllia.utils.PlayerUtils;
 import fr.euphyllia.skyllia.utils.WorldUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.WorldBorder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -97,25 +95,11 @@ public class VisitSubCommand implements SubCommandInterface {
                 } else {
                     loc = warpIsland.location().clone();
                 }
-                loc.add(0, 0.1, 0);
+                // 本服务端项目自定义修改：visit 点按玩家浮点坐标原样存储，
+                // 传送时不再叠加 Y 偏移，落点与设置点一致。
                 player.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.PLUGIN).thenRun(() -> {
-                    if (PlayerUtils.hasPermission(player, "skyllia.island.worldborder.bypass")) {
-                        return;
-                    }
-
                     ConfigLoader.language.sendMessage(player, "island.visit.success", Map.of(
                             "%player%", visitPlayer));
-
-                    Location center = RegionHelper.getCenterRegion(loc.getWorld(), island.getRegionCoordinate().x(), island.getRegionCoordinate().z());
-
-                    WorldBorder border = player.getWorldBorder();
-                    if (border == null) {
-                        border = Bukkit.createWorldBorder();
-                    }
-
-                    border.setCenter(center);
-                    border.setSize(island.getSize());
-                    //player.setWorldBorder(border);
                 });
             }, null, 1L);
         } catch (Exception exception) {

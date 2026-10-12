@@ -76,9 +76,13 @@ public class UntrustSubCommand implements SubCommandInterface {
                 return;
             }
 
-            boolean removed = SkylliaAPI
-                    .getTrustService()
-                    .removeTrusted(island.getId(), targetId);
+            boolean stored = Skyllia.getInstance().getInterneAPI().getIslandQuery()
+                    .getIslandDataQuery().removeTrustedPlayer(island.getId(), targetId);
+            if (!stored && SkylliaAPI.getTrustService().isTrusted(island.getId(), targetId)) {
+                ConfigLoader.language.sendMessage(player, "island.generic.unexpected-error");
+                return;
+            }
+            boolean removed = SkylliaAPI.getTrustService().removeTrusted(island.getId(), targetId);
 
             if (removed) {
                 ConfigLoader.language.sendMessage(player, "island.untrust.success", Map.of("%trusted_name", targetName));

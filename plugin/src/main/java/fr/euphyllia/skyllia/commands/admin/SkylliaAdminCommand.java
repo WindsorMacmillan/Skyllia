@@ -5,6 +5,8 @@ import fr.euphyllia.skyllia.api.commands.SkylliaCommandInterface;
 import fr.euphyllia.skyllia.api.commands.SubCommandInterface;
 import fr.euphyllia.skyllia.api.commands.SubCommandRegistry;
 import fr.euphyllia.skyllia.commands.admin.subcommands.AdminSetDescriptionCommand;
+import fr.euphyllia.skyllia.commands.admin.subcommands.AdminFlagSubCommand;
+import fr.euphyllia.skyllia.commands.admin.subcommands.AdminPermissionSubCommand;
 import fr.euphyllia.skyllia.commands.admin.subcommands.ClaimSubCommand;
 import fr.euphyllia.skyllia.commands.admin.subcommands.CurrentSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.ForceCreateSubCommands;
@@ -13,6 +15,7 @@ import fr.euphyllia.skyllia.commands.admin.subcommands.ForceTransferSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.InfoSubCommand;
 import fr.euphyllia.skyllia.commands.admin.subcommands.PurgeSubCommand;
 import fr.euphyllia.skyllia.commands.admin.subcommands.ReloadSubCommands;
+import fr.euphyllia.skyllia.commands.admin.subcommands.RestoreSubCommand;
 import fr.euphyllia.skyllia.commands.admin.subcommands.SchematicSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.SetHeightSubCommands;
 import fr.euphyllia.skyllia.commands.admin.subcommands.SetMaxMembersSubCommands;
@@ -95,6 +98,10 @@ public class SkylliaAdminCommand implements SkylliaCommandInterface {
         registry.registerSubCommand(new ForceCreateSubCommands(), "create");
         registry.registerSubCommand(new ClaimSubCommand(), "claim");
         registry.registerSubCommand(new PurgeSubCommand(), "purge");
+        // 本服务端项目自定义修改：岛屿存档恢复（热回档）
+        registry.registerSubCommand(new RestoreSubCommand(), "restore");
+        registry.registerSubCommand(new AdminPermissionSubCommand(), "permission", "permissions");
+        registry.registerSubCommand(new AdminFlagSubCommand(), "flags", "flag");
 
         // extra
         registry.registerSubCommand(new AdminSetDescriptionCommand(), "set_name", "setname");

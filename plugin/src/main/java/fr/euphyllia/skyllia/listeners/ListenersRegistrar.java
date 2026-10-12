@@ -9,12 +9,15 @@ import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.ObsidianFormHologramLi
 import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.OreDropPreventionListener;
 import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.PistonEvent;
 import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.SheepEatGrassListener;
+import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.ShelfAccessListener;
+import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.TNTPrimeAccessListener;
 import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.EndPortalFrameMineListener;
 import fr.euphyllia.skyllia.listeners.bukkitevents.blocks.IcePlaceWarningListener;
 import fr.euphyllia.skyllia.listeners.bukkitevents.player.*;
 import fr.euphyllia.skyllia.listeners.bukkitevents.world.ChunkEvent;
 import fr.euphyllia.skyllia.listeners.extra.IslandInfoExtraListener;
 import fr.euphyllia.skyllia.listeners.bukkitevents.entity.LightningVillagerTransformListener;
+import fr.euphyllia.skyllia.listeners.bukkitevents.inventory.IslandTopGuiListener;
 import fr.euphyllia.skyllia.listeners.bukkitevents.player.*;
 import fr.euphyllia.skyllia.listeners.bukkitevents.portal.PortalOverrideListener;
 import fr.euphyllia.skyllia.listeners.permissions.block.*;
@@ -38,7 +41,6 @@ import fr.euphyllia.skyllia.listeners.permissions.inventory.InventoryModifyClick
 import fr.euphyllia.skyllia.listeners.permissions.inventory.InventoryModifyDragPermissions;
 import fr.euphyllia.skyllia.listeners.permissions.inventory.InventoryOpenPermissions;
 import fr.euphyllia.skyllia.listeners.permissions.player.*;
-import fr.euphyllia.skyllia.listeners.skyblockevents.SkyblockEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.event.Listener;
@@ -72,7 +74,6 @@ public class ListenersRegistrar {
 
         // Bukkit Events
         registerEvent(pluginManager, new JoinEvent(interneAPI));
-        registerEvent(pluginManager, new WorldBorderAddEvent(interneAPI));
         registerEvent(pluginManager, new PistonEvent(interneAPI));
         registerEvent(pluginManager, new GrowEvent(interneAPI));
         registerEvent(pluginManager, new SheepEatGrassListener(interneAPI));
@@ -94,10 +95,12 @@ public class ListenersRegistrar {
         registerEvent(pluginManager, new FrostWalkerListener());
         registerEvent(pluginManager, new ProjectileBlockBreakListener());
         registerEvent(pluginManager, new OreDropPreventionListener());
+        registerEvent(pluginManager, new ShelfAccessListener());
+        registerEvent(pluginManager, new TNTPrimeAccessListener());
+        registerEvent(pluginManager, new IslandTopGuiListener());
         portalListener.startCleanupTask(); // 启动全局清理
 
         // Skyblock Events
-        registerEvent(pluginManager, new SkyblockEvent(interneAPI));
         registerEvent(pluginManager, new IslandInfoExtraListener());
 
         // Permissions Listeners

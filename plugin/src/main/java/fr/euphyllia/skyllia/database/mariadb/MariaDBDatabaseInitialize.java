@@ -55,6 +55,16 @@ public class MariaDBDatabaseInitialize extends DatabaseInitializeQuery {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
             """;
 
+    private static final String CREATE_ISLANDS_TRUSTED_PLAYERS_TABLE = """
+            CREATE TABLE IF NOT EXISTS islands_trusted_players (
+                island_id CHAR(36) NOT NULL,
+                uuid_player CHAR(36) NOT NULL,
+                PRIMARY KEY (island_id, uuid_player),
+                CONSTRAINT islands_trusted_players_FK FOREIGN KEY (island_id)
+                    REFERENCES islands (island_id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+            """;
+
     private static final String CREATE_ISLANDS_WARP_TABLE = """
             CREATE TABLE IF NOT EXISTS islands_warp (
                 id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -240,6 +250,7 @@ public class MariaDBDatabaseInitialize extends DatabaseInitializeQuery {
         exec(CREATE_ISLANDS_TABLE);
         exec(CREATE_PERMISSION_REGISTRY_TABLE);
         exec(CREATE_ISLANDS_MEMBERS_TABLE);
+        exec(CREATE_ISLANDS_TRUSTED_PLAYERS_TABLE);
         exec(CREATE_ISLANDS_WARP_TABLE);
         exec(CREATE_SPIRAL_TABLE);
         exec(CREATE_ISLANDS_PERMISSIONS_TABLE);

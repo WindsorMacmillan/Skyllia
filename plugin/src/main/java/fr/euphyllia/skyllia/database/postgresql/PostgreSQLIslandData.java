@@ -18,10 +18,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class PostgreSQLIslandData extends IslandDataQuery {
+
+    private static final String SCHEMA = "public";
 
     private static final String SELECT_ISLAND_BY_OWNER = """
             SELECT i.*
@@ -103,6 +109,20 @@ public class PostgreSQLIslandData extends IslandDataQuery {
             SELECT world_name, center_x, center_y, center_z
             FROM island_center_locations
             WHERE island_id = ?;
+            """;
+
+    private static final String SELECT_TRUSTED_PLAYERS = """
+            SELECT t.island_id, t.uuid_player
+            FROM %s.islands_trusted_players t
+            JOIN %s.islands i ON i.island_id = t.island_id
+            WHERE i.disable = FALSE;
+            """;
+    private static final String ADD_TRUSTED_PLAYER = """
+            INSERT INTO %s.islands_trusted_players (island_id, uuid_player) VALUES (?, ?)
+            ON CONFLICT (island_id, uuid_player) DO NOTHING;
+            """;
+    private static final String REMOVE_TRUSTED_PLAYER = """
+            DELETE FROM %s.islands_trusted_players WHERE island_id = ? AND uuid_player = ?;
             """;
 
 
@@ -258,6 +278,38 @@ public class PostgreSQLIslandData extends IslandDataQuery {
                     return locations;
                 });
         return result != null ? result : List.of();
+    }
+
+    @Override
+    public Map<UUID, Set<UUID>> loadTrustedPlayers() {
+        String schema = SCHEMA;
+        Map<UUID, Set<UUID>> result = SQLExecute.queryMap(databaseLoader,
+                SELECT_TRUSTED_PLAYERS.formatted(schema, schema), null, rs -> {
+                    Map<UUID, Set<UUID>> loaded = new LinkedHashMap<>();
+                    try {
+                        while (rs.next()) {
+                            UUID islandId = rs.getObject("island_id", UUID.class);
+                            UUID playerId = rs.getObject("uuid_player", UUID.class);
+                            loaded.computeIfAbsent(islandId, ignored -> new HashSet<>()).add(playerId);
+                        }
+                    } catch (Exception e) {
+                        log.error("loadTrustedPlayers failed", e);
+                    }
+                    return loaded;
+                });
+        return result != null ? result : Map.of();
+    }
+
+    @Override
+    public boolean addTrustedPlayer(UUID islandId, UUID playerId) {
+        return SQLExecute.update(databaseLoader, ADD_TRUSTED_PLAYER.formatted(SCHEMA),
+                List.of(islandId, playerId)) > 0;
+    }
+
+    @Override
+    public boolean removeTrustedPlayer(UUID islandId, UUID playerId) {
+        return SQLExecute.update(databaseLoader, REMOVE_TRUSTED_PLAYER.formatted(SCHEMA),
+                List.of(islandId, playerId)) > 0;
     }
 
 

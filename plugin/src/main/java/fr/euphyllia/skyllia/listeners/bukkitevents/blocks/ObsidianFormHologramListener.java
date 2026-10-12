@@ -41,11 +41,6 @@ public class ObsidianFormHologramListener implements Listener {
         Material newType = event.getNewState().getType();
 
         // 1) 圆石 → 深板岩圆石（y<0）
-        if (newType == Material.COBBLESTONE && block.getY() < 0) {
-            event.getNewState().setType(Material.COBBLED_DEEPSLATE);
-            return;
-        }
-
         // 2) 黑曜石悬浮字逻辑
         if (newType != Material.OBSIDIAN) return;
 

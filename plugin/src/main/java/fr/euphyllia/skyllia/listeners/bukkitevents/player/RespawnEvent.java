@@ -52,7 +52,9 @@ public class RespawnEvent implements Listener {
         if (island != null) {
             Location spawn = island.getSpawnLocation(islandWorld);
             if (spawn != null && spawn.getWorld() != null) {
-                return spawn.add(0, 0.5, 0);
+                // 本服务端项目自定义修改：出生点按玩家浮点坐标原样存储，
+                // 复活时不再叠加 +0.5 Y 偏移，使落点与设置点一致。
+                return spawn;
             }
         }
 

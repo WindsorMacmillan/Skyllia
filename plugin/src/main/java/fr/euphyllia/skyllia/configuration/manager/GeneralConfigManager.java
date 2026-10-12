@@ -24,6 +24,8 @@ public class GeneralConfigManager implements IConfigurationProvider {
     private PermissionsSettings permissionsSettings;
 
     private UpdateCheckerSettings updateCheckerSettings;
+    // 本服务端项目自定义修改：岛屿存档恢复（热回档）设置
+    private RestoreSettings restoreSettings;
 
     public GeneralConfigManager(CommentedFileConfig config) {
         this.config = config;
@@ -92,6 +94,14 @@ public class GeneralConfigManager implements IConfigurationProvider {
         this.updateCheckerSettings = new UpdateCheckerSettings(
                 getOrSetDefault("settings.update-checker.enabled", true, Boolean.class),
                 getOrSetDefault("settings.update-checker.interval-minutes", 60L, Long.class)
+        );
+
+        // 本服务端项目自定义修改：岛屿存档恢复设置。
+        // backup-root：备份世界目录（备份中的世界根目录，其下应有 dimensions/<命名空间>/<维度>/region|poi|entities）；
+        // reminder-interval-hours：定时提醒管理员备份世界存档的间隔（小时），0 表示关闭。
+        this.restoreSettings = new RestoreSettings(
+                getOrSetDefault("settings.restore.backup-root", "restore/world", String.class),
+                getOrSetDefault("settings.restore.reminder-interval-hours", 2, Integer.class)
         );
 
         if (changed) {
@@ -163,6 +173,15 @@ public class GeneralConfigManager implements IConfigurationProvider {
 
     public UpdateCheckerSettings getUpdateCheckerSettings() {
         return updateCheckerSettings;
+    }
+
+    // 本服务端项目自定义修改：岛屿存档恢复设置
+    public RestoreSettings getRestoreSettings() {
+        return restoreSettings;
+    }
+
+    // 本服务端项目自定义修改：岛屿存档恢复设置
+    public record RestoreSettings(String backupRoot, int reminderIntervalHours) {
     }
 
     public Location getSpawnLocation() {

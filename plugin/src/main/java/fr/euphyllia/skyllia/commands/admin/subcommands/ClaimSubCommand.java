@@ -22,7 +22,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.WorldBorder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -196,14 +195,14 @@ public class ClaimSubCommand implements SubCommandInterface {
                             Player onlineOwner = Bukkit.getPlayer(ownerId);
                             return onlineOwner == null
                                     ? CompletableFuture.completedFuture(null)
-                                    : teleportAndApplyBorder(onlineOwner, island, center);
+                                    : teleportToIsland(onlineOwner, center);
                         }, command -> Bukkit.getAsyncScheduler().runNow(Skyllia.getInstance(), task -> command.run()));
             });
         }
         return chain;
     }
 
-    private CompletableFuture<Void> teleportAndApplyBorder(Player player, Island island, Location center) {
+    private CompletableFuture<Void> teleportToIsland(Player player, Location center) {
         Location spawn = center.clone().add(0.5, 0.1, 0.5);
         return player.teleportAsync(spawn, PlayerTeleportEvent.TeleportCause.PLUGIN).thenAccept(success -> {
             if (!success) {

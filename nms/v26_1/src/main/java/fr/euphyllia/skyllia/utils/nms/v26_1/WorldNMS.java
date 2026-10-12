@@ -520,6 +520,19 @@ public class WorldNMS extends fr.euphyllia.skyllia.api.utils.nms.WorldNMS {
     }
 
     @Override
+    public @Nullable Long getTickRegionId(Location location) {
+        if (location.getWorld() == null) {
+            return null;
+        }
+        final int x = location.blockX() >> 4;
+        final int z = location.blockZ() >> 4;
+        final ServerLevel world = ((CraftWorld) location.getWorld()).getHandle();
+        io.papermc.paper.threadedregions.ThreadedRegionizer.ThreadedRegion<io.papermc.paper.threadedregions.TickRegions.TickRegionData, io.papermc.paper.threadedregions.TickRegions.TickRegionSectionData>
+                region = world.regioniser.getRegionAtUnsynchronised(x, z);
+        return region == null ? null : region.id;
+    }
+
+    @Override
     public List<Entity> getEntities(World craftWorld, final @Nullable Entity except, final BoundingBox boundingBox, Predicate<? super Entity> filter) {
         final ServerLevel nms = ((CraftWorld) craftWorld).getHandle();
         AABB bb = new AABB(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());

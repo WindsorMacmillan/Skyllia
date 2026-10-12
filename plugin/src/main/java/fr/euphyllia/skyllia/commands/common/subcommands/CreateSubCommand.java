@@ -22,7 +22,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.WorldBorder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -182,7 +181,7 @@ public class CreateSubCommand implements SubCommandInterface {
                                         .cacheIslandAndIndex(island);
 
                                 new SkyblockLoadEvent(island).callEvent();
-                                return teleportAndApplyBorder(player, island, center);
+                                return teleportToIsland(player, center);
                             }
                             return CompletableFuture.completedFuture(null);
                         }, command -> Bukkit.getAsyncScheduler().runNow(Skyllia.getInstance(), scheduledTask -> command.run()));
@@ -191,7 +190,7 @@ public class CreateSubCommand implements SubCommandInterface {
         return chain;
     }
 
-    private CompletableFuture<Void> teleportAndApplyBorder(Player player, Island island, Location center) {
+    private CompletableFuture<Void> teleportToIsland(Player player, Location center) {
         Location spawnLoc = center.clone().add(0, 0.5, 0);
         return player.teleportAsync(spawnLoc, PlayerTeleportEvent.TeleportCause.PLUGIN)
                 .thenAccept(successTeleport -> {
@@ -200,14 +199,6 @@ public class CreateSubCommand implements SubCommandInterface {
                     }
                     player.setVelocity(new Vector(0, 0, 0));
                     player.setFallDistance(0);
-                    if (PlayerUtils.hasPermission(player, "skyllia.island.worldborder.bypass")) {
-                        return;
-                    }
-                    WorldBorder border = player.getWorldBorder();
-                    if (border == null) border = Bukkit.createWorldBorder();
-                    border.setCenter(center);
-                    border.setSize(island.getSize());
-                    player.setWorldBorder(border);
                 });
     }
 

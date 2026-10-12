@@ -207,7 +207,8 @@ public class PortalOverrideListener implements Listener {
 
                 // 出生点已经是主世界 → 直接传送
                 if (home.getWorld() != null && home.getWorld().getEnvironment() == World.Environment.NORMAL) {
-                    home.add(0, 0.5, 0);
+                    // 本服务端项目自定义修改：家坐标按玩家浮点坐标原样存储，
+                    // 传送时不再叠加 +0.5 Y 偏移，落点与设置点一致。
                     Bukkit.getGlobalRegionScheduler().execute(SkylliaAPI.getPlugin(),
                             () -> player.teleportAsync(home, TeleportCause.END_PORTAL).thenRun(() -> {
                         player.setVelocity(new Vector(0, 0, 0));

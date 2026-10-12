@@ -4,17 +4,13 @@ import fr.euphyllia.skyllia.api.SkylliaAPI;
 import fr.euphyllia.skyllia.api.commands.SubCommandInterface;
 import fr.euphyllia.skyllia.api.skyblock.Island;
 import fr.euphyllia.skyllia.api.skyblock.model.WarpIsland;
-import fr.euphyllia.skyllia.api.utils.helper.RegionHelper;
 import fr.euphyllia.skyllia.configuration.ConfigLoader;
-import fr.euphyllia.skyllia.utils.PlayerUtils;
 import fr.euphyllia.skyllia.utils.WorldUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.WorldBorder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -44,7 +40,6 @@ public class HomeSubCommand implements SubCommandInterface {
             }
 
             WarpIsland warpIsland = island.getWarpByName("home");
-            double rayon = island.getSize();
             World islandWorld = WorldUtils.getWorldConfigs().getFirst().getWorld();
 
             Location loc;
@@ -55,31 +50,14 @@ public class HomeSubCommand implements SubCommandInterface {
             } else {
                 loc = island.getSpawnLocation(islandWorld);
             }
-            loc.add(0.5, 0.1, 0.5);
-
+            // 本服务端项目自定义修改：家坐标现按玩家浮点坐标原样存储，
+            // 传送时不再叠加 +0.5 方块居中偏移，使落点与设置点完全一致
+            // （避免在不完整方块上设置时被偏移卡进方块）。
             player.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.PLUGIN).thenRun(() -> {
                 player.setVelocity(new Vector(0, 0, 0));
                 player.setFallDistance(0);
 
                 ConfigLoader.language.sendMessage(player, "island.home.success");
-
-                if (PlayerUtils.hasPermission(player, "skyllia.island.worldborder.bypass")) {
-                    return;
-                }
-
-                Location center = RegionHelper.getCenterRegion(
-                        islandWorld,
-                        island.getRegionCoordinate().x(),
-                        island.getRegionCoordinate().z()
-                );
-
-                WorldBorder border = player.getWorldBorder();
-                if (border == null) {
-                    border = Bukkit.createWorldBorder();
-                }
-                border.setCenter(center);
-                border.setSize(rayon);
-                //player.setWorldBorder(border);
             });
         } catch (Exception exception) {
             logger.log(Level.FATAL, exception.getMessage(), exception);

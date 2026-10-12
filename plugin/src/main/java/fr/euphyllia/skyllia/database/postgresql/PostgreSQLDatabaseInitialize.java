@@ -79,6 +79,14 @@ public class PostgreSQLDatabaseInitialize extends DatabaseInitializeQuery {
             );
             """;
 
+    private static final String CREATE_ISLANDS_TRUSTED_PLAYERS_TABLE = """
+            CREATE TABLE IF NOT EXISTS %s.islands_trusted_players (
+                island_id UUID NOT NULL REFERENCES %s.islands(island_id) ON DELETE CASCADE,
+                uuid_player UUID NOT NULL,
+                PRIMARY KEY (island_id, uuid_player)
+            );
+            """;
+
     private static final String CREATE_ISLANDS_WARP_TABLE = """
             CREATE TABLE IF NOT EXISTS %s.islands_warp (
                 id          BIGSERIAL PRIMARY KEY,
@@ -243,6 +251,7 @@ public class PostgreSQLDatabaseInitialize extends DatabaseInitializeQuery {
         ensureRegionUniqueConstraint(s);
 
         exec(CREATE_ISLANDS_MEMBERS_TABLE.formatted(s, s));
+        exec(CREATE_ISLANDS_TRUSTED_PLAYERS_TABLE.formatted(s, s));
         exec(CREATE_ISLANDS_WARP_TABLE.formatted(s, s));
         exec(CREATE_SPIRAL_TABLE.formatted(s));
         exec(CREATE_ISLANDS_PERMISSIONS_TABLE.formatted(s, s));

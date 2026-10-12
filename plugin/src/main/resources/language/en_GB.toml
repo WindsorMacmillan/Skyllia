@@ -35,6 +35,7 @@ player-not-in-island = "The player is not on your island."
 
 [island.delete]
 args-missing = "You must add 'confirm' to the end of your command."
+confirm = "<white>[</white><gray>空岛</gray><white>] </white><red>你确定要删除你的空岛吗？删除空岛会使你的物品、等级和余额清零！服务器明确禁止反复重置空岛完成挑战并转账刷钱，并且会报告每一次空岛重置记录。15秒内再次执行</red><gray>[</gray><yellow>/is delete confirm</yellow><gray>]</gray><red>以确认执行。</red>"
 
 [island.leave]
 he-is-owner = "You cannot leave your island, as you are the owner!"
@@ -148,19 +149,21 @@ home-not-found = "The island home was not found."
 [island.info]
 no-owner = "The island has no owner."
 no-permission = "You do not have permission to view this island's information."
+wilderness = "无人区"
 
 [island.info.display]
 title = "<gold>=== Island Information ===</gold>"
 id = "<yellow>Island ID: </yellow><white>%id%</white>"
-owner = "<yellow>Owner: </yellow><white>%owner%</white>"
+owner = "<yellow>Owner: </yellow><white>%owner% (%owner_uuid%)</white>"
 size = "<yellow>Size: </yellow><white>%size% blocks</white>"
 private = "<yellow>Private: </yellow><white>%private%</white>"
 max-members = "<yellow>Max Members: </yellow><white>%max%</white>"
 created = "<yellow>Creation Date: </yellow><white>%created%</white>"
 online-members = "<yellow>Online Members: </yellow><white>%online%/%total%</white>"
+inactive = "<yellow>Inactivity: </yellow><white>%duration%</white>"
 location = "<yellow>Location: </yellow><white>X: %x% Z: %z%</white>"
 members-title = "<gold>=== Members ===</gold>"
-member-line = "%color%- [%role%] %name%"
+member-line = "%color%- [%role%] %name% %offline%"
 
 [island.kick]
 success = "The player has been kicked from your island."

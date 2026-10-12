@@ -4,6 +4,7 @@ import fr.euphyllia.skyllia.api.skyblock.model.RoleType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +24,18 @@ public class TrustService {
      * players associated with it.
      */
     private final ConcurrentHashMap<UUID, Set<UUID>> trustedByIsland = new ConcurrentHashMap<>();
+
+    /** Replaces the in-memory cache with data loaded from the island database. */
+    public void load(Map<UUID, Set<UUID>> trustedPlayers) {
+        trustedByIsland.clear();
+        if (trustedPlayers == null) return;
+        trustedPlayers.forEach((islandId, players) -> {
+            if (islandId == null || players == null || players.isEmpty()) return;
+            Set<UUID> copy = ConcurrentHashMap.newKeySet();
+            copy.addAll(players);
+            trustedByIsland.put(islandId, copy);
+        });
+    }
 
     /**
      * Adds a player to the trusted list of an island.

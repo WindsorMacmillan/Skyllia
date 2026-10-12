@@ -63,13 +63,16 @@ public class SQLiteIslandWarp extends IslandWarpQuery {
 
     @Override
     public Boolean updateWarp(UUID islandId, String warpName, Location location) {
+        // 本服务端项目自定义修改：此前使用 getBlockX/Y/Z 会把坐标截断为整数，
+        // 导致玩家在不完整方块（台阶、雪层等）表面设置的家/出生点/传送点
+        // 在传送时落入方块内部。改为与 MariaDB / PostgreSQL 一致，按双精度浮点存储。
         int affected = SQLExecute.update(databaseLoader, UPSERT_WARPS, List.of(
                 islandId.toString(),
                 warpName,
                 location.getWorld().getName(),
-                location.getBlockX(),
-                location.getBlockY(),
-                location.getBlockZ(),
+                location.getX(),
+                location.getY(),
+                location.getZ(),
                 location.getPitch(),
                 location.getYaw()
         ));

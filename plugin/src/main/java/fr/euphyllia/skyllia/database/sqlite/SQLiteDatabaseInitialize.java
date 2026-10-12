@@ -56,6 +56,15 @@ public class SQLiteDatabaseInitialize extends DatabaseInitializeQuery {
             );
             """;
 
+    private static final String CREATE_ISLANDS_TRUSTED_PLAYERS_TABLE = """
+            CREATE TABLE IF NOT EXISTS islands_trusted_players (
+                island_id TEXT NOT NULL,
+                uuid_player TEXT NOT NULL,
+                PRIMARY KEY (island_id, uuid_player),
+                FOREIGN KEY (island_id) REFERENCES islands(island_id) ON DELETE CASCADE
+            );
+            """;
+
     private static final String CREATE_ISLANDS_WARP_TABLE = """
             CREATE TABLE IF NOT EXISTS islands_warp (
                 id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -201,6 +210,7 @@ public class SQLiteDatabaseInitialize extends DatabaseInitializeQuery {
     private void createDatabaseAndTables() {
         exec(CREATE_ISLANDS_TABLE);
         exec(CREATE_ISLANDS_MEMBERS_TABLE);
+        exec(CREATE_ISLANDS_TRUSTED_PLAYERS_TABLE);
         exec(CREATE_ISLANDS_WARP_TABLE);
         exec(CREATE_SPIRAL_TABLE);
         exec(CREATE_ISLANDS_PERMISSIONS_TABLE);

@@ -102,6 +102,7 @@ public class InterneAPI {
             case "1.21.11" -> "fr.euphyllia.skyllia.utils.nms.v1_21_R7.";
             case "26.1", "26.1.1", "26.1.2" -> "fr.euphyllia.skyllia.utils.nms.v26_1.";
             case "26.2" -> "fr.euphyllia.skyllia.utils.nms.v26_2.";
+            case "26.3" -> "fr.euphyllia.skyllia.utils.nms.v26_3.";
             default ->
                     throw new UnsupportedMinecraftVersionException("Unsupported Minecraft version: " + minecraftVersion);
         };

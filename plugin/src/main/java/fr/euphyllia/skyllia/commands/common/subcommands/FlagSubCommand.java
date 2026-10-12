@@ -90,8 +90,15 @@ public class FlagSubCommand implements SubCommandInterface {
             return;
         }
 
+        executeForIsland(plugin, player, island, args);
+    }
+
+    /** Executes the same syntax against a specified island, for administrator commands. */
+    public void executeForIsland(@NotNull Plugin plugin, @NotNull CommandSender sender,
+                                 @NotNull Island island, @NotNull String[] args) {
+
         if (args.length == 0) {
-            ConfigLoader.language.sendMessage(player, "island.flag.usage");
+            ConfigLoader.language.sendMessage(sender, "island.flag.usage");
             return;
         }
 
@@ -106,22 +113,22 @@ public class FlagSubCommand implements SubCommandInterface {
                     .toList();
 
             if (all.isEmpty()) {
-                ConfigLoader.language.sendMessage(player, "island.flag.list.empty");
+                ConfigLoader.language.sendMessage(sender, "island.flag.list.empty");
                 return;
             }
 
-            ConfigLoader.language.sendMessage(player, "island.flag.list.header", Map.of(
+            ConfigLoader.language.sendMessage(sender, "island.flag.list.header", Map.of(
                     "%count%", String.valueOf(all.size())
             ));
 
             int limit = Math.min(all.size(), 80);
             for (int i = 0; i < limit; i++) {
-                ConfigLoader.language.sendMessage(player, "island.flag.list.entry", Map.of(
+                ConfigLoader.language.sendMessage(sender, "island.flag.list.entry", Map.of(
                         "%flag%", all.get(i)
                 ));
             }
             if (all.size() > limit) {
-                ConfigLoader.language.sendMessage(player, "island.flag.list.more", Map.of(
+                ConfigLoader.language.sendMessage(sender, "island.flag.list.more", Map.of(
                         "%more%", String.valueOf(all.size() - limit)
                 ));
             }
@@ -139,13 +146,13 @@ public class FlagSubCommand implements SubCommandInterface {
         }
 
         if (args.length - offset < 1) {
-            ConfigLoader.language.sendMessage(player, "island.flag.usage");
+            ConfigLoader.language.sendMessage(sender, "island.flag.usage");
             return;
         }
 
         NamespacedKey key = NamespacedKey.fromString(args[offset]);
         if (key == null) {
-            ConfigLoader.language.sendMessage(player, "island.flag.flag.invalid-format", Map.of(
+            ConfigLoader.language.sendMessage(sender, "island.flag.flag.invalid-format", Map.of(
                     "%flag%", args[offset]
             ));
             return;
@@ -153,7 +160,7 @@ public class FlagSubCommand implements SubCommandInterface {
 
         FlagId fid = registry.getIfPresent(key);
         if (fid == null) {
-            ConfigLoader.language.sendMessage(player, "island.flag.flag.unknown", Map.of(
+            ConfigLoader.language.sendMessage(sender, "island.flag.flag.unknown", Map.of(
                     "%flag%", toKeyString(key)
             ));
             return;
@@ -165,7 +172,7 @@ public class FlagSubCommand implements SubCommandInterface {
             if (SkylliaAPI.isWorldSkyblock(candidate)) {
                 worldName = candidate;
             } else {
-                ConfigLoader.language.sendMessage(player, "island.flag.world.invalid", Map.of(
+                ConfigLoader.language.sendMessage(sender, "island.flag.world.invalid", Map.of(
                         "%world%", candidate
                 ));
                 return;
@@ -173,13 +180,13 @@ public class FlagSubCommand implements SubCommandInterface {
         }
 
         if (worldName == null) {
-            String playerWorld = player.getWorld().getName();
-            if (SkylliaAPI.isWorldSkyblock(playerWorld)) {
+            String playerWorld = sender instanceof Player p ? p.getWorld().getName() : null;
+            if (playerWorld != null && SkylliaAPI.isWorldSkyblock(playerWorld)) {
                 worldName = playerWorld;
             } else {
                 List<WorldConfig> worlds = SkylliaAPI.getRegisteredWorlds();
                 if (worlds.isEmpty()) {
-                    ConfigLoader.language.sendMessage(player, "island.flag.no-world"); // Todo : add message
+                    ConfigLoader.language.sendMessage(sender, "island.flag.no-world"); // Todo : add message
                     return;
                 }
                 worldName = worlds.getFirst().getWorldName();
@@ -194,7 +201,7 @@ public class FlagSubCommand implements SubCommandInterface {
         boolean current = island.getIslandFlags(worldName).has(registry, fid);
 
         if (action.equals("get") || (action.equals("auto") && explicitBool == null)) {
-            ConfigLoader.language.sendMessage(player, "island.flag.value", Map.of(
+            ConfigLoader.language.sendMessage(sender, "island.flag.value", Map.of(
                     "%flag%", toKeyString(key),
                     "%value%", String.valueOf(current)
             ));
@@ -206,7 +213,7 @@ public class FlagSubCommand implements SubCommandInterface {
             next = !current;
         } else {
             if (explicitBool == null) {
-                ConfigLoader.language.sendMessage(player, "island.flag.bool.invalid", Map.of(
+                ConfigLoader.language.sendMessage(sender, "island.flag.bool.invalid", Map.of(
                         "%value%", (args.length - offset >= 2 ? args[offset + 1] : "")
                 ));
                 return;
@@ -216,12 +223,12 @@ public class FlagSubCommand implements SubCommandInterface {
 
         boolean updated = setDbAndRuntime(island, fid, next, worldName);
         if (!updated) {
-            ConfigLoader.language.sendMessage(player, "island.flag.update.failed");
+            ConfigLoader.language.sendMessage(sender, "island.flag.update.failed");
             return;
         }
 
         boolean finalValue = island.getIslandFlags(worldName).has(registry, fid);
-        ConfigLoader.language.sendMessage(player, "island.flag.update.success", Map.of(
+        ConfigLoader.language.sendMessage(sender, "island.flag.update.success", Map.of(
                 "%flag%", toKeyString(key),
                 "%old%", String.valueOf(current),
                 "%new%", String.valueOf(finalValue)

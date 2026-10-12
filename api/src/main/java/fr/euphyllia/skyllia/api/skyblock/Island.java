@@ -424,9 +424,11 @@ public abstract class Island {
      *     {@code world}, which acts as the always-available default spawn.</li>
      * </ol>
      * The returned location is a defensive copy and is never {@code null} as long
-     * as the world is valid. Callers that want the player to stand on top of the
-     * spawn block should add a {@code +0.5} Y offset themselves, mirroring the
-     * behaviour of {@code /is home}.
+     * as the world is valid.
+     * <p>
+     * 本服务端项目自定义修改：自定义出生点按玩家浮点坐标原样存取，调用方应直接
+     * 使用返回的坐标进行传送，不应再叠加方块居中偏移（如 {@code +0.5}），否则在
+     * 不完整方块（台阶、雪层等）表面设置的出生点会导致玩家卡进方块。
      * </p>
      *
      * @param world The {@link World} for which to resolve the spawn.

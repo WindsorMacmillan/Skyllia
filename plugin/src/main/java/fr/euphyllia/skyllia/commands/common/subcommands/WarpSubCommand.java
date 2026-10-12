@@ -7,17 +7,12 @@ import fr.euphyllia.skyllia.api.permissions.PermissionId;
 import fr.euphyllia.skyllia.api.permissions.PermissionNode;
 import fr.euphyllia.skyllia.api.skyblock.Island;
 import fr.euphyllia.skyllia.api.skyblock.model.WarpIsland;
-import fr.euphyllia.skyllia.api.utils.helper.RegionHelper;
 import fr.euphyllia.skyllia.configuration.ConfigLoader;
-import fr.euphyllia.skyllia.utils.PlayerUtils;
-import fr.euphyllia.skyllia.utils.WorldUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.WorldBorder;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -82,12 +77,6 @@ public class WarpSubCommand implements SubCommandInterface {
                 return;
             }
 
-            double rayon = island.getSize();
-            Location center = RegionHelper.getCenterRegion(
-                    Bukkit.getWorld(WorldUtils.getWorldConfigs().getFirst().getWorldName()),
-                    island.getRegionCoordinate().x(),
-                    island.getRegionCoordinate().z()
-            );
             Location loc = targetWarp.location().clone();
 
             player.teleportAsync(loc, PlayerTeleportEvent.TeleportCause.PLUGIN).thenRun(() -> {
@@ -95,18 +84,6 @@ public class WarpSubCommand implements SubCommandInterface {
                 player.setFallDistance(0);
 
                 ConfigLoader.language.sendMessage(player, "island.warp.teleport-success");
-
-                if (PlayerUtils.hasPermission(player, "skyllia.island.worldborder.bypass")) {
-                    return;
-                }
-
-                WorldBorder border = player.getWorldBorder();
-                if (border == null) {
-                    border = Bukkit.createWorldBorder();
-                }
-                border.setCenter(center);
-                border.setSize(rayon);
-                //player.setWorldBorder(border);
             });
         } catch (Exception e) {
             logger.log(Level.FATAL, e.getMessage(), e);

@@ -146,6 +146,18 @@ public class WorldNMS extends fr.euphyllia.skyllia.api.utils.nms.WorldNMS {
         }
     }
 
+    public static @Nullable Long getTickRegionIdHelper(Location location) {
+        if (location.getWorld() == null) {
+            return null;
+        }
+        final int x = location.blockX() >> 4;
+        final int z = location.blockZ() >> 4;
+        final ServerLevel world = ((CraftWorld) location.getWorld()).getHandle();
+        io.papermc.paper.threadedregions.ThreadedRegionizer.ThreadedRegion<io.papermc.paper.threadedregions.TickRegions.TickRegionData, io.papermc.paper.threadedregions.TickRegions.TickRegionSectionData>
+                region = world.regioniser.getRegionAtUnsynchronised(x, z);
+        return region == null ? null : region.id;
+    }
+
     @Override
     public WorldFeedback.FeedbackWorld createWorld(WorldCreator creator) {
         return createWorldInternal(creator, null, null);
@@ -448,6 +460,11 @@ public class WorldNMS extends fr.euphyllia.skyllia.api.utils.nms.WorldNMS {
     @Override
     public double @Nullable [] getAverageTickTimes(Chunk chunk) {
         return getAverageTickTimesHelper(chunk);
+    }
+
+    @Override
+    public @Nullable Long getTickRegionId(Location location) {
+        return getTickRegionIdHelper(location);
     }
 
     @Override

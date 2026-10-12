@@ -7,12 +7,15 @@ import fr.euphyllia.skyllia.api.InterneAPI;
 import fr.euphyllia.skyllia.api.SkylliaAPI;
 import fr.euphyllia.skyllia.api.commands.SubCommandRegistry;
 import fr.euphyllia.skyllia.api.exceptions.UnsupportedMinecraftVersionException;
+import fr.euphyllia.skyllia.analytics.IslandBlockTopScanner;
 import fr.euphyllia.skyllia.api.utils.metrics.BStatsMetrics;
 import fr.euphyllia.skyllia.commands.CommandRegistrar;
 import fr.euphyllia.skyllia.configuration.ConfigLoader;
 import fr.euphyllia.skyllia.hook.HookBootstrap;
 import fr.euphyllia.skyllia.listeners.ListenersRegistrar;
 import fr.euphyllia.skyllia.papi.SkylliaExpansion;
+import fr.euphyllia.skyllia.restore.IslandRestoreService;
+import fr.euphyllia.skyllia.restore.RestoreReminderTask;
 import fr.euphyllia.skyllia.sgbd.exceptions.DatabaseException;
 import fr.euphyllia.skyllia.tasks.InactiveIslandPurgeService;
 import fr.euphyllia.skyllia.utils.UpdateCheckerTask;
@@ -44,6 +47,12 @@ public class Skyllia extends JavaPlugin {
     private SubCommandRegistry adminCommandRegistry;
     private BStatsMetrics bStatsMetrics;
     private InactiveIslandPurgeService inactiveIslandPurgeService;
+    // 本服务端项目自定义修改：光荣榜方块类排名的滚动统计任务
+    private IslandBlockTopScanner blockTopScanner;
+    // 本服务端项目自定义修改：岛屿存档恢复（热回档）服务
+    private IslandRestoreService islandRestoreService;
+    // 本服务端项目自定义修改：存档备份提醒任务
+    private RestoreReminderTask restoreReminderTask;
 
     public static Skyllia getInstance() {
         return instance;
@@ -92,6 +101,17 @@ public class Skyllia extends JavaPlugin {
         // Register commands via CommandRegistrar
         CommandRegistrar commandRegistrar = new CommandRegistrar(this);
         commandRegistrar.registerCommands();
+        // 本服务端项目自定义修改：初始化岛屿存档恢复服务（供 /skylliadmin restore 使用）
+        this.islandRestoreService = new IslandRestoreService();
+        // 本服务端项目自定义修改：启动存档备份提醒
+        this.restoreReminderTask = new RestoreReminderTask(this);
+        this.restoreReminderTask.start();
+        // 本服务端项目自定义修改：启动光荣榜异常告警轮询，
+        // 使无人看榜时仍每 10 分钟扫描一次，保证告警始终在线
+        commandRegistrar.startTopAlertPolling();
+        // 本服务端项目自定义修改：启动方块类排名的滚动统计任务（每小时更新一次结果）
+        blockTopScanner = new IslandBlockTopScanner(this, commandRegistrar.getBlockTopStore());
+        blockTopScanner.start();
 
         this.commandRegistry = commandRegistrar.getCommandRegistry();
         this.adminCommandRegistry = commandRegistrar.getAdminCommandRegistry();
@@ -125,6 +145,17 @@ public class Skyllia extends JavaPlugin {
             bStatsMetrics.shutdown();
         }
         inactiveIslandPurgeService = null;
+        // 本服务端项目自定义修改：终止方块类排名统计线程并清空结果，保证可安全热重载
+        if (blockTopScanner != null) {
+            blockTopScanner.stop();
+            blockTopScanner = null;
+        }
+        // 本服务端项目自定义修改：停止恢复执法任务、清空区域锁，保证可安全热重载
+        if (islandRestoreService != null) {
+            islandRestoreService.stop();
+            islandRestoreService = null;
+        }
+        this.restoreReminderTask = null;
 
         Bukkit.getAsyncScheduler().cancelTasks(this);
         Bukkit.getGlobalRegionScheduler().cancelTasks(this);
@@ -158,6 +189,11 @@ public class Skyllia extends JavaPlugin {
         return inactiveIslandPurgeService;
     }
 
+    // 本服务端项目自定义修改：岛屿存档恢复（热回档）服务
+    public IslandRestoreService getIslandRestoreService() {
+        return islandRestoreService;
+    }
+
     private boolean loadConfigurations() {
         try {
             for (String folder : new String[]{"config", "language", "schematics"}) {
@@ -169,6 +205,10 @@ public class Skyllia extends JavaPlugin {
             boolean ok = this.interneAPI.setupSGBD();
             if (!ok) {
                 logger.error("[SGBD] setupSGBD() returned false (no exception). Check DB config/credentials/driver/reachability.");
+            } else {
+                this.interneAPI.getTrustService().load(
+                        this.interneAPI.getIslandQuery().getIslandDataQuery().loadTrustedPlayers()
+                );
             }
             return ok;
         } catch (DatabaseException exception) {

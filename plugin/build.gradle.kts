@@ -4,21 +4,21 @@ plugins {
 }
 group = "fr.euphyllia.skyllia"
 
-repositories {
-    maven {
-        name = "Luminol"
-        url = uri("https://repo.menthamc.org/repository/maven-public/")
-    }
-}
-
+// 本服务端项目自定义修改：Luminol 的 maven 仓库（repo.menthamc.org）已删库失效，
+// 改为使用本地 Lophine 服务端构建产物，坐标 fun.bm.lophine:lophine-api。
+// lophine-api 完整包含 luminol-api 及 paper/folia API，解析自 mavenLocal。
 dependencies {
+    testImplementation(platform("org.junit:junit-bom:5.13.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT") { isTransitive = false }
     compileOnly("net.kyori:adventure-text-minimessage:5.2.0")
     compileOnly("net.kyori:adventure-text-serializer-legacy:5.2.0")
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     compileOnly("net.luckperms:api:5.4")
-    compileOnly("me.earthme.luminol:luminol-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("fun.bm.lophine:lophine-api:26.3.local-SNAPSHOT")
     compileOnly("dev.faststats.metrics:bukkit:0.27.0")
     compileOnly(project(":api"))
     compileOnly(project(":database"))
@@ -44,8 +44,16 @@ dependencies {
     compileOnly(project(":nms:v1_21_R7"))
     //compileOnly(project(":nms:v26_1"))
     //compileOnly(project(":nms:v26_2"))
+    compileOnly(project(":nms:v26_3"))
 }
 java.disableAutoTargetJvm()
+
+// 本服务端项目自定义修改：本模块因引用 lophine-api（JVM 25）需 Java 25 编译，
+// toolchain 已在根项目 allprojects 中按模块名统一设置为 25（此处不可覆盖，见根注释）。
+
+tasks.test {
+    useJUnitPlatform()
+}
 
 publishing {
     publications {

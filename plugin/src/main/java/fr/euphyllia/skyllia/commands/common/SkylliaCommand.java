@@ -26,10 +26,13 @@ public class SkylliaCommand implements SkylliaCommandInterface {
     private final Skyllia plugin;
     private final SubCommandRegistry registry;
     private final Logger logger = LogManager.getLogger(this);
+    // 本服务端项目自定义修改：由外部注入，便于插件启动时启动异常告警轮询
+    private final TopSubCommand topSubCommand;
 
-    public SkylliaCommand(Skyllia Skyllia) {
+    public SkylliaCommand(Skyllia Skyllia, TopSubCommand topSubCommand) {
         this.plugin = Skyllia;
         this.registry = this.plugin.getCommandRegistry();
+        this.topSubCommand = topSubCommand;
         registerDefaultCommands();
     }
 
@@ -48,10 +51,13 @@ public class SkylliaCommand implements SkylliaCommandInterface {
         registry.registerSubCommand(new InviteSubCommand(), "invite", "add");
         registry.registerSubCommand(new KickSubCommand(), "kick");
         registry.registerSubCommand(new LeaveSubCommand(), "leave");
+        // 本服务端项目自定义修改：/is near 显示四方向邻接岛屿的岛主
+        registry.registerSubCommand(new NearSubCommand(), "near");
         registry.registerSubCommand(new PermissionSubCommand(), "permission");
         registry.registerSubCommand(new FlagSubCommand(), "flag", "gamerule");
         registry.registerSubCommand(new PromoteSubCommand(), "promote");
         registry.registerSubCommand(new TPSSubCommand(), "tps", "lag", "mspt");
+        registry.registerSubCommand(topSubCommand, "top");
         registry.registerSubCommand(new TransferSubCommand(), "transfer");
         registry.registerSubCommand(new TrustSubCommand(), "trust");
         registry.registerSubCommand(new SetHomeSubCommand(), "sethome");

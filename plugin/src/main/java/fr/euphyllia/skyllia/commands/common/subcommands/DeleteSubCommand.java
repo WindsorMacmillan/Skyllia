@@ -28,12 +28,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DeleteSubCommand implements SubCommandInterface {
 
     private final Logger logger = LogManager.getLogger(DeleteSubCommand.class);
+
+    // Lophine 自定义修改：删除命令采用两阶段确认，状态仅保存在当前子命令实例中，便于 PlugmanX 热卸载时清理。
+    private static final long DELETE_CONFIRM_WINDOW_NANOS = 15_000_000_000L;
+    private static final long DELETION_IN_PROGRESS = Long.MAX_VALUE;
+    private final Map<UUID, Long> pendingDeleteConfirmations = new ConcurrentHashMap<>();
 
     public static void checkClearPlayer(SkyblockManager skyblockManager, Players players, RemovalCause cause) {
         Player bPlayer = Bukkit.getPlayer(players.getMojangId());
@@ -97,15 +104,15 @@ public class DeleteSubCommand implements SubCommandInterface {
             ConfigLoader.language.sendMessage(sender, "island.player.player-only-command");
             return;
         }
-        if (args.length != 1) {
+        if (args.length > 1) {
             ConfigLoader.language.sendMessage(player, "island.delete.args-missing");
             return;
         }
-        String confirm = args[0];
-        if (!confirm.equalsIgnoreCase("confirm")) {
+        if (args.length == 1 && !args[0].equalsIgnoreCase("confirm")) {
             ConfigLoader.language.sendMessage(player, "island.admin.delete-no-confirm");
             return;
         }
+
         try {
             SkyblockManager skyblockManager = Skyllia.getInstance().getInterneAPI().getSkyblockManager();
             Island island = SkylliaAPI.getIslandByPlayerId(player.getUniqueId());
@@ -115,8 +122,7 @@ public class DeleteSubCommand implements SubCommandInterface {
             }
 
             Players executorPlayer = island.getMember(player.getUniqueId());
-
-            if (!executorPlayer.getRoleType().equals(RoleType.OWNER)) {
+            if (executorPlayer == null || !executorPlayer.getRoleType().equals(RoleType.OWNER)) {
                 ConfigLoader.language.sendMessage(player, "island.delete-only-owner");
                 return;
             }
@@ -131,6 +137,27 @@ public class DeleteSubCommand implements SubCommandInterface {
                     return;
                 }
             }
+
+            boolean hasConfirmationArgument = args.length == 1;
+            if (hasConfirmationArgument && isDeletionInProgress(player.getUniqueId())) {
+                return;
+            }
+            if (!hasConfirmationArgument || !tryStartDeletion(player.getUniqueId())) {
+                startDeleteConfirmation(plugin, player);
+                return;
+            }
+
+            // Lophine 自定义修改：记录每次由玩家确认执行的空岛删除，便于追溯反复重置行为。
+            Players owner = island.getOwner();
+            logger.info("Island deletion confirmed by player {} ({}), island={}, owner={} ({}), worlds-to-delete={}",
+                    player.getName(),
+                    player.getUniqueId(),
+                    island.getId(),
+                    owner == null ? "unknown" : owner.getLastKnowName(),
+                    owner == null ? "unknown" : owner.getMojangId(),
+                    ConfigLoader.worldManager.getWorldConfigs().entrySet().stream()
+                            .filter(entry -> entry.getValue().shouldDeleteIsland())
+                            .count());
 
             skyblockManager.setLockedIsland(island, true);
 
@@ -170,12 +197,53 @@ public class DeleteSubCommand implements SubCommandInterface {
                     });
                 });
             } else {
+                pendingDeleteConfirmations.remove(player.getUniqueId(), DELETION_IN_PROGRESS);
                 ConfigLoader.language.sendMessage(player, "island.generic.unexpected-error");
             }
         } catch (Exception e) {
+            pendingDeleteConfirmations.remove(player.getUniqueId(), DELETION_IN_PROGRESS);
             logger.log(Level.FATAL, e.getMessage(), e);
             ConfigLoader.language.sendMessage(player, "island.generic.unexpected-error");
         }
+    }
+
+    // Lophine 自定义修改：创建 15 秒确认窗口；窗口内再次执行 /is delete confirm 才会真正删除。
+    private void startDeleteConfirmation(@NotNull Plugin plugin, @NotNull Player player) {
+        UUID playerId = player.getUniqueId();
+        long now = System.nanoTime();
+        long expiresAt = now + DELETE_CONFIRM_WINDOW_NANOS;
+        Long existingExpiresAt = pendingDeleteConfirmations.putIfAbsent(playerId, expiresAt);
+        if (existingExpiresAt != null && existingExpiresAt == DELETION_IN_PROGRESS) {
+            return;
+        }
+        if (existingExpiresAt != null && existingExpiresAt <= now) {
+            if (!pendingDeleteConfirmations.replace(playerId, existingExpiresAt, expiresAt)) {
+                return;
+            }
+            existingExpiresAt = null;
+        }
+        if (existingExpiresAt == null) {
+            player.getScheduler().runDelayed(plugin,
+                    scheduledTask -> pendingDeleteConfirmations.remove(playerId, expiresAt),
+                    () -> pendingDeleteConfirmations.remove(playerId, expiresAt),
+                    300L);
+        }
+        ConfigLoader.language.sendMessage(player, "island.delete.confirm", Map.of(), false);
+    }
+
+    // Lophine 自定义修改：原子消费确认窗口，确保并发执行 confirm 时最多只有一次会进入删除流程。
+    private boolean tryStartDeletion(UUID playerId) {
+        Long expiresAt = pendingDeleteConfirmations.get(playerId);
+        if (expiresAt == null || expiresAt == DELETION_IN_PROGRESS || expiresAt <= System.nanoTime()) {
+            return false;
+        }
+        return pendingDeleteConfirmations.replace(playerId, expiresAt, DELETION_IN_PROGRESS);
+    }
+
+    // Lophine 自定义修改：删除执行期间阻止重复 confirm 再次进入删除流程。
+    private boolean isDeletionInProgress(UUID playerId) {
+        Long state = pendingDeleteConfirmations.get(playerId);
+        return state != null && state == DELETION_IN_PROGRESS;
     }
 
     @Override
@@ -198,6 +266,7 @@ public class DeleteSubCommand implements SubCommandInterface {
     }
 
     private void finalizeDeletion(SkyblockManager skyblockManager, Island island, boolean failed, Player player) {
+        pendingDeleteConfirmations.remove(player.getUniqueId(), DELETION_IN_PROGRESS);
         boolean lockResult = skyblockManager.setLockedIsland(island, failed);
         if (!lockResult) {
             logger.log(Level.FATAL, "Failed to update lock state for island {} after deletion", island.getId());
